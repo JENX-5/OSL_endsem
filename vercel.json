@@ -1,8 +1,20 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/lab8", "destination": "/lab8.html" },
+    { "source": "/lab9", "destination": "/lab9.html" },
+    { "source": "/lab10", "destination": "/lab10.html" },
+    { "source": "/lab11", "destination": "/lab11.html" },
+    { "source": "/endsem", "destination": "/endsem.html" }
+  ],
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/lab8.html", "destination": "/lab8", "permanent": true },
+    { "source": "/lab9.html", "destination": "/lab9", "permanent": true },
+    { "source": "/lab10.html", "destination": "/lab10", "permanent": true },
+    { "source": "/lab11.html", "destination": "/lab11", "permanent": true },
+    { "source": "/endsem.html", "destination": "/endsem", "permanent": true },
     { "source": "/lab8_work.html", "destination": "/lab8", "permanent": true },
     { "source": "/lab9_work.html", "destination": "/lab9", "permanent": true },
     { "source": "/lab10_page_replacement_enhanced.html", "destination": "/lab10", "permanent": true },
