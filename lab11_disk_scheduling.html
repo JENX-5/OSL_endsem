@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 11 – Disk Scheduling Algorithms | OS Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #fdf8f2;
+  --bg2:     #faf3ea;
+  --bg3:     #f5ead8;
+  --bg4:     #ede0c8;
+  --bg5:     #e4d4b4;
+  --ink:     #2c1f0e;
+  --ink2:    #5a4228;
+  --ink3:    #8a6a48;
+  --ink4:    #b89878;
+  --accent:  #c0622a;
+  --accent2: #e08040;
+  --green:   #2a7a5c;
+  --blue:    #2a5fa0;
+  --red:     #c0402a;
+  --yellow:  #b07a10;
+  --purple:  #6b3fa0;
+  --teal:    #1a7a82;
+  --border:  rgba(160,110,60,0.18);
+  --border2: rgba(160,110,60,0.10);
+  --shadow:  0 2px 12px rgba(80,40,10,0.08);
+  --shadow2: 0 4px 24px rgba(80,40,10,0.12);
+  --mono:    'DM Mono', monospace;
+  --sans:    'DM Sans', sans-serif;
+  --serif:   'Lora', serif;
+
+  /* algo colours */
+  --fcfs-c:   #c0622a;
+  --sstf-c:   #2a7a5c;
+  --scan-c:   #2a5fa0;
+  --cscan-c:  #6b3fa0;
+  --look-c:   #b07a10;
+  --clook-c:  #1a7a82;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.8;font-size:15px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;width:232px;height:100vh;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:20px 0 40px;scrollbar-width:thin;scrollbar-color:var(--bg5) transparent;}
+.nav-logo{padding:0 18px 18px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.nav-logo-title{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--accent);}
+.nav-logo-sub{font-size:11px;color:var(--ink3);margin-top:2px;}
+.nav-group{font-size:10px;font-weight:600;color:var(--ink4);padding:10px 18px 3px;letter-spacing:.1em;text-transform:uppercase;}
+nav a{display:block;padding:6px 18px 6px 16px;color:var(--ink2);text-decoration:none;font-size:13px;border-left:2px solid transparent;transition:all .15s;line-height:1.4;}
+nav a:hover{color:var(--accent);background:var(--bg3);border-left-color:var(--accent2);}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:var(--bg3);font-weight:500;}
+
+/* PROGRESS */
+.prog-bar{position:fixed;top:0;left:232px;right:0;height:3px;background:var(--bg4);z-index:200;}
+.prog-fill{height:100%;background:var(--accent);width:0%;transition:width .1s;}
+
+/* MAIN */
+main{margin-left:232px;padding:0 52px 100px;max-width:980px;}
+
+/* HERO */
+.hero{padding:60px 0 44px;border-bottom:1px solid var(--border);margin-bottom:60px;}
+.lab-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:18px;letter-spacing:.06em;text-transform:uppercase;}
+.hero h1{font-family:var(--serif);font-size:44px;font-weight:700;line-height:1.1;color:var(--ink);margin-bottom:14px;}
+.hero h1 em{font-style:italic;color:var(--accent);}
+.hero-desc{color:var(--ink2);font-size:16px;max-width:580px;line-height:1.7;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+.tag{font-size:11.5px;padding:4px 11px;border-radius:6px;border:1px solid var(--border);color:var(--ink3);background:var(--bg2);}
+.tag.before{border-color:rgba(42,122,92,.3);color:var(--green);background:rgba(42,122,92,.06);}
+.tag.after{border-color:rgba(192,98,42,.3);color:var(--accent);background:rgba(192,98,42,.06);}
+
+/* SECTIONS */
+section{margin-bottom:72px;scroll-margin-top:24px;}
+.eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--border);}
+h2{font-family:var(--serif);font-size:30px;font-weight:700;margin-bottom:18px;color:var(--ink);}
+h3{font-family:var(--serif);font-size:20px;font-weight:600;margin:36px 0 12px;color:var(--ink);}
+h4{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--accent);margin:18px 0 8px;letter-spacing:.02em;text-transform:uppercase;}
+p{color:var(--ink2);margin-bottom:14px;}
+ul,ol{color:var(--ink2);padding-left:22px;margin-bottom:14px;}
+li{margin-bottom:5px;}
+strong{color:var(--ink);font-weight:600;}
+code{font-family:var(--mono);font-size:12.5px;color:var(--accent);background:var(--bg3);padding:1px 5px;border-radius:4px;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:18px;box-shadow:var(--shadow);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px;}
+
+/* CALLOUT */
+.callout{border-radius:10px;padding:18px 22px;margin:18px 0;border-left:3px solid;}
+.callout.info{background:rgba(42,95,160,.07);border-color:var(--blue);}
+.callout.warn{background:rgba(176,122,16,.08);border-color:var(--yellow);}
+.callout.danger{background:rgba(192,64,42,.07);border-color:var(--red);}
+.callout.success{background:rgba(42,122,92,.07);border-color:var(--green);}
+.callout h4{margin-top:0;}
+.callout p:last-child{margin-bottom:0;}
+
+/* ALGO HERO CARDS */
+.algo-card{border-radius:14px;padding:22px 26px;margin-bottom:20px;position:relative;overflow:hidden;border:1px solid var(--border);}
+.algo-card::before{content:attr(data-bg);position:absolute;right:16px;top:6px;font-family:var(--serif);font-size:72px;font-weight:700;color:rgba(0,0,0,.04);line-height:1;pointer-events:none;user-select:none;}
+.ac-fcfs{background:linear-gradient(135deg,#fff8f0,#fdefd8);}
+.ac-sstf{background:linear-gradient(135deg,#f0faf6,#d8f0e8);}
+.ac-scan{background:linear-gradient(135deg,#f0f4ff,#d8e4f8);}
+.ac-cscan{background:linear-gradient(135deg,#f8f0ff,#ead8f5);}
+.ac-look{background:linear-gradient(135deg,#fffbf0,#fdefd0);}
+.ac-clook{background:linear-gradient(135deg,#f0fafa,#d8eeee);}
+.algo-name{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:4px;}
+.ac-fcfs  .algo-name{color:var(--fcfs-c);}
+.ac-sstf  .algo-name{color:var(--sstf-c);}
+.ac-scan  .algo-name{color:var(--scan-c);}
+.ac-cscan .algo-name{color:var(--cscan-c);}
+.ac-look  .algo-name{color:var(--look-c);}
+.ac-clook .algo-name{color:var(--clook-c);}
+.algo-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;}
+.ac-fcfs  .algo-badge{background:rgba(192,98,42,.12);color:var(--fcfs-c);}
+.ac-sstf  .algo-badge{background:rgba(42,122,92,.12);color:var(--sstf-c);}
+.ac-scan  .algo-badge{background:rgba(42,95,160,.12);color:var(--scan-c);}
+.ac-cscan .algo-badge{background:rgba(107,63,160,.12);color:var(--cscan-c);}
+.ac-look  .algo-badge{background:rgba(176,122,16,.12);color:var(--look-c);}
+.ac-clook .algo-badge{background:rgba(26,122,130,.12);color:var(--clook-c);}
+
+/* STEPS */
+.steps{counter-reset:s;list-style:none;padding:0;}
+.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--border2);align-items:start;}
+.steps li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--bg5);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-family:var(--mono);}
+
+/* CODE */
+.code-wrap{position:relative;margin:18px 0;}
+.lang-tag{position:absolute;top:0;right:14px;font-size:10px;font-family:var(--mono);font-weight:500;background:var(--accent);color:#fff;padding:2px 9px;border-radius:0 0 6px 6px;letter-spacing:.04em;text-transform:uppercase;}
+pre{background:#2c1f0e;color:#f0e6d6;border-radius:10px;padding:22px 20px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;tab-size:4;}
+.kw{color:#e8a87c;} .fn{color:#7ec8a4;} .str{color:#c8e87a;} .num{color:#f0c070;} .cm{color:#806850;font-style:italic;} .ty{color:#f0a060;} .op{color:#c8d8e8;}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;margin:18px 0;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--bg3);color:var(--accent);font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;padding:9px 14px;text-align:left;border-bottom:2px solid var(--bg5);}
+td{padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--ink2);font-family:var(--mono);font-size:12.5px;}
+tr:hover td{background:var(--bg2);}
+tr.hl  td{color:var(--green);font-weight:500;}
+tr.hl2 td{color:var(--accent);font-weight:500;}
+tr.hl3 td{color:var(--blue);font-weight:500;}
+
+/* FORMULA */
+.formula{background:var(--bg3);border:1px solid var(--bg5);border-radius:8px;padding:10px 18px;font-family:var(--mono);font-size:13px;color:var(--accent);margin:12px 0;display:inline-block;}
+
+/* DISK VISUALIZER */
+.sim-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px;box-shadow:var(--shadow2);margin:22px 0;}
+.sim-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.sim-title span{font-size:22px;}
+.controls{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;align-items:flex-end;}
+.ctrl-group{display:flex;flex-direction:column;gap:5px;}
+.ctrl-label{font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;}
+input[type="text"],input[type="number"],select{background:var(--bg2);border:1.5px solid var(--bg5);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;}
+input[type="text"]{width:320px;}
+input[type="number"]{width:80px;}
+select{width:160px;cursor:pointer;}
+input:focus,select:focus{border-color:var(--accent2);}
+.btn{padding:9px 20px;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:600;border:none;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-secondary{background:var(--bg3);color:var(--ink2);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--bg4);}
+
+/* DISK TRACK VISUALIZATION */
+.disk-canvas-wrap{margin-top:20px;overflow-x:auto;}
+canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid var(--border2);}
+.stat-row{display:flex;gap:16px;margin-top:18px;flex-wrap:wrap;}
+.stat-chip{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 18px;}
+.stat-chip .val{font-size:24px;font-weight:700;font-family:var(--serif);color:var(--accent);}
+.stat-chip .lbl{font-size:11px;color:var(--ink3);margin-top:1px;}
+.stat-chip.green .val{color:var(--green);}
+.stat-chip.blue  .val{color:var(--blue);}
+
+/* ALGO TABS */
+.atabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px;}
+.atab{padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--bg2);color:var(--ink2);transition:all .15s;}
+.atab:hover{border-color:var(--accent2);color:var(--accent);}
+.atab.sel-fcfs{background:rgba(192,98,42,.12);border-color:var(--fcfs-c);color:var(--fcfs-c);}
+.atab.sel-sstf{background:rgba(42,122,92,.12);border-color:var(--sstf-c);color:var(--sstf-c);}
+.atab.sel-scan{background:rgba(42,95,160,.12);border-color:var(--scan-c);color:var(--scan-c);}
+.atab.sel-cscan{background:rgba(107,63,160,.12);border-color:var(--cscan-c);color:var(--cscan-c);}
+.atab.sel-look{background:rgba(176,122,16,.12);border-color:var(--look-c);color:var(--look-c);}
+.atab.sel-clook{background:rgba(26,122,130,.12);border-color:var(--clook-c);color:var(--clook-c);}
+
+/* COMPARISON GRID */
+.cmp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:18px 0;}
+.cmp-cell{padding:11px 14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:13px;}
+.cmp-cell:nth-child(4n){border-right:none;}
+.cmp-cell.hdr{background:var(--bg3);font-weight:600;color:var(--ink);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono);}
+.cmp-cell.aname{font-weight:600;color:var(--ink);background:var(--bg2);font-family:var(--sans);}
+.cmp-cell.good{color:var(--green);}
+.cmp-cell.bad{color:var(--red);}
+.cmp-cell.ok{color:var(--yellow);}
+
+/* SEEK PATH DISPLAY */
+.seek-path{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:12px 0;font-family:var(--mono);font-size:12.5px;}
+.seek-node{padding:4px 10px;border-radius:6px;font-weight:600;}
+.seek-arrow{color:var(--ink4);font-size:11px;}
+.seek-dist{color:var(--ink3);font-size:11px;margin-left:2px;}
+
+/* VIVA */
+.qa{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.qa-q{padding:13px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;color:var(--ink);font-size:14px;transition:background .12s;gap:12px;}
+.qa-q:hover{background:var(--bg2);}
+.qa-q .ch{color:var(--ink4);flex-shrink:0;transition:transform .2s;}
+.qa-q.open .ch{transform:rotate(180deg);}
+.qa-a{display:none;padding:14px 18px;background:var(--bg2);color:var(--ink2);font-size:13.5px;line-height:1.7;border-top:1px solid var(--border);}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.sum-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:var(--shadow);}
+.sum-card h4{color:var(--accent);margin-top:0;margin-bottom:10px;}
+.sum-card li{font-size:13px;margin-bottom:4px;color:var(--ink2);}
+
+/* BADGE */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;}
+.badge.h{background:rgba(192,64,42,.15);color:var(--red);}
+.badge.m{background:rgba(176,122,16,.15);color:var(--yellow);}
+.badge.e{background:rgba(42,122,92,.12);color:var(--green);}
+
+/* MISTAKE */
+.mistake{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+.m-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px;}
+.m-icon.x{background:rgba(192,64,42,.12);color:var(--red);}
+.m-icon.ok{background:rgba(42,122,92,.10);color:var(--green);}
+
+/* SCROLL TOP */
+.scroll-top{position:fixed;bottom:28px;right:28px;width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:17px;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(192,98,42,.35);transition:transform .2s;}
+.scroll-top:hover{transform:translateY(-2px);}
+
+@media(max-width:860px){
+  nav{display:none;}
+  main{margin-left:0;padding:0 20px 80px;}
+  .two-col,.three-col,.sum-grid{grid-template-columns:1fr;}
+  .prog-bar{left:0;}
+  input[type="text"]{width:100%;}
+  .cmp-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-title">OS Study Guide</div>
+    <div class="nav-logo-sub">Lab 11 · Disk Scheduling</div>
+  </div>
+  <div class="nav-group">Foundation</div>
+  <a href="#intro">Disk Anatomy</a>
+  <a href="#concepts">Seek, Latency & THM</a>
+  <div class="nav-group">Algorithms</div>
+  <a href="#fcfs">FCFS</a>
+  <a href="#sstf">SSTF</a>
+  <a href="#scan">SCAN (Elevator)</a>
+  <a href="#cscan">C-SCAN</a>
+  <a href="#look">LOOK</a>
+  <a href="#clook">C-LOOK</a>
+  <div class="nav-group">Practice</div>
+  <a href="#simulator">Live Simulator</a>
+  <a href="#numericals">Numerical Problems</a>
+  <a href="#comparison">Comparison</a>
+  <a href="#code">C Code</a>
+  <div class="nav-group">Exam Prep</div>
+  <a href="#mistakes">Common Mistakes</a>
+  <a href="#viva">Viva Questions</a>
+  <a href="#summary">Summary Sheet</a>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="lab-badge">💿 Lab 11</div>
+  <h1>Disk Scheduling<br><em>Algorithms</em></h1>
+  <p class="hero-desc">Master FCFS, SSTF, SCAN, C-SCAN, LOOK, and C-LOOK — with interactive disk head visualisations, full THM calculations, step-by-step numericals, and commented C code.</p>
+  <div class="tag-row">
+    <span class="tag before">✓ Before: I/O Systems Basics</span>
+    <span class="tag before">✓ Before: Page Replacement (Lab 10)</span>
+    <span class="tag after">→ After: File System Management</span>
+  </div>
+</div>
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="eyebrow">Section 1 — Foundation</div>
+  <h2>Disk Anatomy & Why Scheduling Matters</h2>
+
+  <div class="callout info">
+    <h4>🏢 The Office Building Analogy</h4>
+    <p>Imagine a security guard (read/write head) in a skyscraper (disk platter). Requests come in from different floors (tracks). The guard can only serve one floor at a time and must physically travel between floors. A naive guard serves requests in arrival order — travelling 1→50→3→48→5. A smart guard plans the route to minimise total travel. That planning is disk scheduling.</p>
+    <p style="margin-bottom:0">Every extra track the head travels costs ~5–15ms. With thousands of I/O requests per second, the scheduling algorithm has a massive impact on system performance.</p>
+  </div>
+
+  <h3>Disk Structure</h3>
+  <div class="three-col">
+    <div class="card">
+      <h4>Platter</h4>
+      <p style="font-size:13px;margin:0">Circular magnetic disk coated with magnetisable material. Multiple platters stack on a common spindle. Data is read/written magnetically.</p>
+    </div>
+    <div class="card">
+      <h4>Track & Cylinder</h4>
+      <p style="font-size:13px;margin:0">Concentric circles on a platter surface = tracks. The set of tracks at the same arm position across all platters = a cylinder. Numbered 0 to N−1.</p>
+    </div>
+    <div class="card">
+      <h4>Read/Write Head</h4>
+      <p style="font-size:13px;margin:0">Tiny electromagnetic coil that flies just above the platter surface. All heads move together as one arm assembly. One active head per platter surface.</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h4>Sector</h4>
+      <p style="font-size:13px;margin:0">Smallest addressable unit on a disk. A track is divided into sectors (typically 512 bytes or 4096 bytes). Data is read/written a sector at a time.</p>
+    </div>
+    <div class="card">
+      <h4>Disk Arm</h4>
+      <p style="font-size:13px;margin:0">The mechanical assembly that moves all heads in unison across the platter surfaces, positioning them over the correct cylinder for access.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPTS -->
+<section id="concepts">
+  <div class="eyebrow">Section 2 — Foundation</div>
+  <h2>Seek Time, Latency & Total Head Movement</h2>
+
+  <p>Three components make up the total time for a disk access:</p>
+
+  <div class="three-col">
+    <div class="card">
+      <h4>1. Seek Time</h4>
+      <p style="font-size:13px;margin:0">Time for the arm to move to the correct <strong>cylinder (track)</strong>. The dominant cost. Typically 3–15ms. <em>What we minimise with scheduling.</em></p>
+    </div>
+    <div class="card">
+      <h4>2. Rotational Latency</h4>
+      <p style="font-size:13px;margin:0">Time waiting for the disk to rotate until the correct <strong>sector</strong> is under the head. Avg = half a rotation. ~4ms at 7200 RPM.</p>
+    </div>
+    <div class="card">
+      <h4>3. Transfer Time</h4>
+      <p style="font-size:13px;margin:0">Time to actually <strong>read or write</strong> the data once head is in position. Usually the fastest of the three. Depends on data size and rotation speed.</p>
+    </div>
+  </div>
+
+  <h3>Total Head Movement (THM)</h3>
+  <p>All scheduling algorithms in this lab are evaluated by their <strong>Total Head Movement</strong> — the sum of absolute distances the head travels to service all requests. Lower THM = better performance.</p>
+
+  <div class="formula">THM = Σ |cylinder[i+1] − cylinder[i]| for each consecutive pair in service order</div>
+
+  <div class="callout warn">
+    <h4>Lab Manual Setup — Memorise This</h4>
+    <p style="margin-bottom:0">All numerical examples use: <strong>200 cylinders (0–199)</strong>, head starts at <strong>cylinder 53</strong>, previous position <strong>125</strong> (used for directional algorithms), queue = <code>98, 183, 37, 122, 14, 124, 65, 67</code></p>
+  </div>
+</section>
+
+<!-- FCFS -->
+<section id="fcfs">
+  <div class="eyebrow">Section 3 — Algorithms</div>
+  <h2>FCFS — First Come, First Served</h2>
+
+  <div class="algo-card ac-fcfs" data-bg="F">
+    <div class="algo-badge">Simplest</div>
+    <div class="algo-name">First Come, First Served</div>
+    <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;max-width:520px">Service requests strictly in the order they arrive in the queue. No reordering whatsoever. Fair to all processes but causes wild head swings across the disk.</p>
+  </div>
+
+  <h3>How it Works</h3>
+  <p>Maintain a FIFO queue of cylinder requests. The head visits them in exactly that order, regardless of distance. Simple to implement; no starvation.</p>
+
+  <ul class="steps">
+    <li><strong>Start</strong> at the current head position.</li>
+    <li><strong>Dequeue</strong> the next request from the front of the queue.</li>
+    <li><strong>Move</strong> the head to that cylinder. Add |distance| to THM.</li>
+    <li><strong>Repeat</strong> until all requests are serviced.</li>
+  </ul>
+
+  <h3>Lab Manual Calculation</h3>
+  <p>Start: 53. Queue: 98, 183, 37, 122, 14, 124, 65, 67</p>
+  <div class="seek-path">
+    <span class="seek-node" style="background:rgba(192,98,42,.12);color:var(--accent)">53</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">98</span><span class="seek-dist">(45)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">183</span><span class="seek-dist">(85)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">37</span><span class="seek-dist">(146)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">122</span><span class="seek-dist">(85)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">14</span><span class="seek-dist">(108)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">124</span><span class="seek-dist">(110)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">65</span><span class="seek-dist">(59)</span>
+    <span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">67</span><span class="seek-dist">(2)</span>
+  </div>
+  <div class="formula">THM = 45+85+146+85+108+110+59+2 = <strong>640 cylinders</strong></div>
+
+  <div class="callout danger">
+    <h4>Problem with FCFS</h4>
+    <p style="margin:0;font-size:13px">Wild swings from cylinder 183 back to 37 (146 cylinders!) happen because requests are not sorted. FCFS treats the disk like a tape — completely ignoring the physical cost of movement. Only suitable for very light disk loads.</p>
+  </div>
+</section>
+
+<!-- SSTF -->
+<section id="sstf">
+  <div class="eyebrow">Section 4 — Algorithms</div>
+  <h2>SSTF — Shortest Seek Time First</h2>
+
+  <div class="algo-card ac-sstf" data-bg="S">
+    <div class="algo-badge">Greedy</div>
+    <div class="algo-name">Shortest Seek Time First</div>
+    <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;max-width:520px">At each step, service the pending request that is <strong>closest</strong> to the current head position. A greedy nearest-neighbour strategy. Much better than FCFS but can cause starvation.</p>
+  </div>
+
+  <h3>How it Works</h3>
+  <p>After each request is serviced, scan the entire pending queue and pick the request with minimum |current − request| distance. Move there, repeat.</p>
+
+  <ul class="steps">
+    <li><strong>Start</strong> at current head position (53).</li>
+    <li><strong>Scan</strong> all pending requests. Find the one closest to current position.</li>
+    <li><strong>Move</strong> to that request. Add distance to THM. Remove from queue.</li>
+    <li><strong>Repeat</strong> from step 2 until queue is empty.</li>
+  </ul>
+
+  <h3>Lab Manual Calculation</h3>
+  <p>Start: 53. Step-by-step nearest selection:</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Step</th><th>Current</th><th>Pending (sorted by distance)</th><th>Chosen</th><th>Distance</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>53</td><td>65(12), 67(14), 37(16), 98(45)…</td><td>65</td><td>12</td></tr>
+        <tr><td>2</td><td>65</td><td>67(2), 37(28), 98(33)…</td><td>67</td><td>2</td></tr>
+        <tr><td>3</td><td>67</td><td>37(30), 98(31), 122(55)…</td><td>37</td><td>30</td></tr>
+        <tr><td>4</td><td>37</td><td>14(23), 98(61), 122(85)…</td><td>14</td><td>23</td></tr>
+        <tr><td>5</td><td>14</td><td>98(84), 122(108), 124(110)…</td><td>98</td><td>84</td></tr>
+        <tr><td>6</td><td>98</td><td>122(24), 124(26), 183(85)…</td><td>122</td><td>24</td></tr>
+        <tr><td>7</td><td>122</td><td>124(2), 183(61)</td><td>124</td><td>2</td></tr>
+        <tr class="hl"><td>8</td><td>124</td><td>183(59)</td><td>183</td><td>59</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="formula">THM = 12+2+30+23+84+24+2+59 = <strong>236 cylinders</strong></div>
+
+  <div class="two-col">
+    <div class="callout success">
+      <h4>Advantage</h4>
+      <p style="margin:0;font-size:13px">Much better average seek time than FCFS. Reduces unnecessary long seeks. Natural tendency to stay near high-traffic areas of the disk.</p>
+    </div>
+    <div class="callout danger">
+      <h4>Starvation Problem</h4>
+      <p style="margin:0;font-size:13px">Requests far from current head position may wait indefinitely if new closer requests keep arriving. A request at cylinder 183 starves if the head keeps bouncing near cylinder 50.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SCAN -->
+<section id="scan">
+  <div class="eyebrow">Section 5 — Algorithms</div>
+  <h2>SCAN — The Elevator Algorithm</h2>
+
+  <div class="algo-card ac-scan" data-bg="E">
+    <div class="algo-badge">Elevator</div>
+    <div class="algo-name">SCAN (Elevator Algorithm)</div>
+    <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;max-width:520px">The head sweeps from one end of the disk to the other, servicing requests in its path. At each end, it <strong>reverses direction</strong>. Like an elevator — goes up serving, goes down serving, up again…</p>
+  </div>
+
+  <h3>How it Works</h3>
+  <p>The head moves in one direction, services all requests it passes. When it reaches the end (cylinder 0 or 199), it reverses and sweeps back. Requires knowing current direction of movement.</p>
+
+  <ul class="steps">
+    <li><strong>Know direction</strong>: moving towards lower or higher cylinders? (Determined from previous position — 125 → 53 means moving toward lower.)</li>
+    <li><strong>Move in current direction</strong>, servicing all requests encountered.</li>
+    <li><strong>Reach an end</strong> (cylinder 0 or 199) — reverse direction even if no pending requests there.</li>
+    <li><strong>Continue</strong> servicing requests in new direction until all done.</li>
+  </ul>
+
+  <h3>Lab Manual Calculation</h3>
+  <p>Start: 53. Previous: 125 → moving toward <strong>lower cylinders (decreasing)</strong>. Queue sorted: 14, 37, 65, 67, 98, 122, 124, 183.</p>
+  <p>Direction: ↓ toward 0 first, then ↑.</p>
+  <div class="seek-path">
+    <span class="seek-node" style="background:rgba(42,95,160,.12);color:var(--blue)">53</span>
+    <span class="seek-arrow">↓</span><span class="seek-node" style="background:var(--bg3)">37</span><span class="seek-dist">(16)</span>
+    <span class="seek-arrow">↓</span><span class="seek-node" style="background:var(--bg3)">14</span><span class="seek-dist">(23)</span>
+    <span class="seek-arrow">↓</span><span class="seek-node" style="background:rgba(42,95,160,.12);color:var(--blue)">0</span><span class="seek-dist">(14) end</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">65</span><span class="seek-dist">(65)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">67</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">98</span><span class="seek-dist">(31)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">122</span><span class="seek-dist">(24)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">124</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">183</span><span class="seek-dist">(59)</span>
+  </div>
+  <div class="formula">THM = 16+23+14+65+2+31+24+2+59 = <strong>236 cylinders</strong></div>
+
+  <div class="callout warn">
+    <h4>Note on Direction</h4>
+    <p style="margin:0;font-size:13px">The starting direction is determined by the <em>previous</em> head position. Previous=125, current=53 → head was moving toward lower cylinders, so SCAN continues downward first. The end of disk (cylinder 0) is always visited even if no requests are there.</p>
+  </div>
+</section>
+
+<!-- C-SCAN -->
+<section id="cscan">
+  <div class="eyebrow">Section 6 — Algorithms</div>
+  <h2>C-SCAN — Circular SCAN</h2>
+
+  <div class="algo-card ac-cscan" data-bg="C">
+    <div class="algo-badge">Uniform Wait</div>
+    <div class="algo-name">Circular SCAN</div>
+    <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;max-width:520px">Like SCAN, but the head only services requests in <strong>one direction</strong>. When it reaches the far end, it immediately <strong>jumps back</strong> to the beginning without servicing on the return. Provides more uniform wait times.</p>
+  </div>
+
+  <h3>How it Works</h3>
+  <p>The head moves in one direction (say, toward higher cylinders), servicing requests. When it reaches cylinder 199, it zips back to cylinder 0 <em>without servicing anything</em>, then sweeps upward again. Treats the disk as a circular buffer.</p>
+
+  <ul class="steps">
+    <li><strong>Move toward higher cylinders</strong>, service all requests in path.</li>
+    <li><strong>Reach cylinder 199</strong> — immediately jump to cylinder 0 (this jump is NOT counted in THM).</li>
+    <li><strong>Continue</strong> sweeping toward higher cylinders again, servicing remaining requests.</li>
+    <li><strong>Repeat</strong> until all requests serviced.</li>
+  </ul>
+
+  <h3>Lab Manual Calculation</h3>
+  <p>Start: 53. Direction: ↑ toward higher cylinders. Queue sorted: 14, 37, 65, 67, 98, 122, 124, 183.</p>
+  <div class="seek-path">
+    <span class="seek-node" style="background:rgba(107,63,160,.12);color:var(--purple)">53</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">65</span><span class="seek-dist">(12)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">67</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">98</span><span class="seek-dist">(31)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">122</span><span class="seek-dist">(24)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">124</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">183</span><span class="seek-dist">(59)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:rgba(107,63,160,.12);color:var(--purple)">199</span><span class="seek-dist">(16)</span>
+    <span class="seek-arrow" style="color:var(--red)">⟵ jump</span>
+    <span class="seek-node" style="background:rgba(107,63,160,.12);color:var(--purple)">0</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">14</span><span class="seek-dist">(14)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">37</span><span class="seek-dist">(23)</span>
+  </div>
+  <div class="formula">THM = 12+2+31+24+2+59+16+14+23 = <strong>183 cylinders</strong></div>
+
+  <div class="callout success">
+    <h4>Why C-SCAN beats SCAN for fairness</h4>
+    <p style="margin:0;font-size:13px">In SCAN, requests just behind the head must wait for a full sweep-and-return. In C-SCAN, the return is instant, so waiting time is bounded to one sweep. Useful for real-time and multimedia applications where predictable latency matters.</p>
+  </div>
+  <div class="callout warn">
+    <h4>Important: Jump is NOT counted in THM</h4>
+    <p style="margin:0;font-size:13px">The jump from 199 back to 0 (or from 183 back to 14 in C-LOOK) represents the head being repositioned, not a data access. Exam questions often try to catch students adding this distance. <strong>Do not count it.</strong></p>
+  </div>
+</section>
+
+<!-- LOOK -->
+<section id="look">
+  <div class="eyebrow">Section 7 — Algorithms</div>
+  <h2>LOOK</h2>
+
+  <div class="algo-card ac-look" data-bg="L">
+    <div class="algo-badge">Smarter SCAN</div>
+    <div class="algo-name">LOOK</div>
+    <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;max-width:520px">Like SCAN, but the head <strong>doesn't travel all the way to the end</strong> of the disk. It only goes as far as the last request in each direction, then reverses. No wasted travel to cylinder 0 or 199 if no requests are there.</p>
+  </div>
+
+  <h3>LOOK vs SCAN</h3>
+  <div class="two-col">
+    <div class="callout info">
+      <h4>SCAN</h4>
+      <p style="margin:0;font-size:13px">Always travels to <strong>physical end</strong> of disk (cylinder 0 or 199) before reversing, even if the last request is at cylinder 14.</p>
+    </div>
+    <div class="callout success">
+      <h4>LOOK</h4>
+      <p style="margin:0;font-size:13px">Travels only to the <strong>last pending request</strong> in each direction before reversing. Saves the unnecessary travel to the disk edge.</p>
+    </div>
+  </div>
+
+  <h3>Lab Manual Calculation</h3>
+  <p>Start: 53. Moving toward lower first (previous=125). Lowest request: 14, highest: 183.</p>
+  <div class="seek-path">
+    <span class="seek-node" style="background:rgba(176,122,16,.12);color:var(--yellow)">53</span>
+    <span class="seek-arrow">↓</span><span class="seek-node" style="background:var(--bg3)">37</span><span class="seek-dist">(16)</span>
+    <span class="seek-arrow">↓</span><span class="seek-node" style="background:rgba(176,122,16,.12);color:var(--yellow)">14</span><span class="seek-dist">(23) ← reverses here</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">65</span><span class="seek-dist">(51)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">67</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">98</span><span class="seek-dist">(31)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">122</span><span class="seek-dist">(24)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">124</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:rgba(176,122,16,.12);color:var(--yellow)">183</span><span class="seek-dist">(59)</span>
+  </div>
+  <div class="formula">THM = 16+23+51+2+31+24+2+59 = <strong>208 cylinders</strong></div>
+  <p style="font-size:13px;color:var(--ink2)">Saves 28 cylinders vs SCAN (236) — the unnecessary travel from 14→0 and back is eliminated.</p>
+</section>
+
+<!-- C-LOOK -->
+<section id="clook">
+  <div class="eyebrow">Section 8 — Algorithms</div>
+  <h2>C-LOOK — Circular LOOK</h2>
+
+  <div class="algo-card ac-clook" data-bg="CL">
+    <div class="algo-badge">Most Efficient</div>
+    <div class="algo-name">C-LOOK</div>
+    <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;max-width:520px">Combines the best of C-SCAN and LOOK. Moves in one direction, goes only to the <strong>last request</strong> (not disk end), then jumps back to the <strong>first request</strong> (not cylinder 0). The most efficient algorithm in this set.</p>
+  </div>
+
+  <h3>C-LOOK vs C-SCAN</h3>
+  <div class="two-col">
+    <div class="callout info">
+      <h4>C-SCAN</h4>
+      <p style="margin:0;font-size:13px">Goes to <strong>physical end (199)</strong>, jumps back to <strong>cylinder 0</strong>. Wastes travel if last request is at 183 and first is at 14.</p>
+    </div>
+    <div class="callout success">
+      <h4>C-LOOK</h4>
+      <p style="margin:0;font-size:13px">Goes to <strong>last request (183)</strong>, jumps to <strong>first request (14)</strong>. Saves all unnecessary travel beyond the actual data range.</p>
+    </div>
+  </div>
+
+  <h3>Lab Manual Calculation</h3>
+  <p>Start: 53. Direction: ↑. Highest request: 183, lowest: 14.</p>
+  <div class="seek-path">
+    <span class="seek-node" style="background:rgba(26,122,130,.12);color:var(--teal)">53</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">65</span><span class="seek-dist">(12)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">67</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">98</span><span class="seek-dist">(31)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">122</span><span class="seek-dist">(24)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">124</span><span class="seek-dist">(2)</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:rgba(26,122,130,.12);color:var(--teal)">183</span><span class="seek-dist">(59)</span>
+    <span class="seek-arrow" style="color:var(--red)">⟵ jump</span>
+    <span class="seek-node" style="background:rgba(26,122,130,.12);color:var(--teal)">14</span>
+    <span class="seek-arrow">↑</span><span class="seek-node" style="background:var(--bg3)">37</span><span class="seek-dist">(23)</span>
+  </div>
+  <div class="formula">THM = 12+2+31+24+2+59+23 = <strong>153 cylinders</strong></div>
+  <p style="font-size:13px;color:var(--ink2)">Best result among all 6 algorithms for this example. 183→14 jump is NOT counted.</p>
+</section>
+
+<!-- SIMULATOR -->
+<section id="simulator">
+  <div class="eyebrow">Section 9 — Interactive</div>
+  <h2>Live Disk Scheduling Simulator</h2>
+  <p>Enter any request queue, head position, and number of cylinders. Select an algorithm to see the animated seek path and THM.</p>
+
+  <div class="sim-wrap">
+    <div class="sim-title"><span>💿</span> Disk Head Movement Visualiser</div>
+
+    <div class="atabs">
+      <button class="atab sel-fcfs" id="tab-fcfs"  onclick="setAlgo('fcfs')">FCFS</button>
+      <button class="atab"          id="tab-sstf"  onclick="setAlgo('sstf')">SSTF</button>
+      <button class="atab"          id="tab-scan"  onclick="setAlgo('scan')">SCAN</button>
+      <button class="atab"          id="tab-cscan" onclick="setAlgo('cscan')">C-SCAN</button>
+      <button class="atab"          id="tab-look"  onclick="setAlgo('look')">LOOK</button>
+      <button class="atab"          id="tab-clook" onclick="setAlgo('clook')">C-LOOK</button>
+    </div>
+
+    <div class="controls">
+      <div class="ctrl-group">
+        <span class="ctrl-label">Request Queue</span>
+        <input type="text" id="queue" value="98,183,37,122,14,124,65,67">
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Head Start</span>
+        <input type="number" id="headPos" value="53" min="0">
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Cylinders</span>
+        <input type="number" id="maxCyl" value="200" min="10">
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Direction</span>
+        <select id="direction">
+          <option value="down">↓ Decreasing</option>
+          <option value="up">↑ Increasing</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="runSim()">▶ Run</button>
+      <button class="btn btn-secondary" onclick="compareAll()">⚡ Compare All</button>
+    </div>
+
+    <div class="disk-canvas-wrap">
+      <canvas id="diskCanvas" width="860" height="320"></canvas>
+    </div>
+    <div class="stat-row" id="statRow"></div>
+    <div id="seekSeqDisplay" style="margin-top:16px"></div>
+  </div>
+
+  <div class="sim-wrap" id="compareWrap" style="display:none">
+    <div class="sim-title"><span>⚡</span>All Algorithms Comparison</div>
+    <div id="compareOut"></div>
+  </div>
+</section>
+
+<!-- NUMERICALS -->
+<section id="numericals">
+  <div class="eyebrow">Section 10 — Practice</div>
+  <h2>Numerical Problems — Full Solutions</h2>
+  <p>All using: 200 cylinders, head at 53, previous at 125, queue: 98, 183, 37, 122, 14, 124, 65, 67.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Algorithm</th><th>Service Order</th><th>THM</th><th>Improvement over FCFS</th></tr></thead>
+      <tbody>
+        <tr class="hl2"><td>FCFS</td><td>98→183→37→122→14→124→65→67</td><td>640</td><td>—</td></tr>
+        <tr class="hl"><td>SSTF</td><td>65→67→37→14→98→122→124→183</td><td>236</td><td>63% better</td></tr>
+        <tr class="hl3"><td>SCAN</td><td>37→14→0→65→67→98→122→124→183</td><td>236</td><td>63% better</td></tr>
+        <tr><td>C-SCAN</td><td>65→67→98→122→124→183→199→0→14→37</td><td>183</td><td>71% better</td></tr>
+        <tr><td>LOOK</td><td>37→14→65→67→98→122→124→183</td><td>208</td><td>68% better</td></tr>
+        <tr class="hl"><td>C-LOOK</td><td>65→67→98→122→124→183→14→37</td><td>153</td><td>76% better</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Worked Example: C-SCAN Step by Step <span class="badge h">Exam Favourite</span></h3>
+  <div class="card">
+    <h4>Setup</h4>
+    <p style="font-size:13px;margin-bottom:8px">Head=53, Direction=↑(increasing), Cylinders 0–199. Sorted queue: 14, 37, 65, 67, 98, 122, 124, 183.</p>
+    <ol style="font-size:13px;color:var(--ink2);margin:0">
+      <li>Move ↑ from 53 → 65: distance = |65−53| = <strong>12</strong></li>
+      <li>Move ↑ from 65 → 67: distance = |67−65| = <strong>2</strong></li>
+      <li>Move ↑ from 67 → 98: distance = |98−67| = <strong>31</strong></li>
+      <li>Move ↑ from 98 → 122: distance = |122−98| = <strong>24</strong></li>
+      <li>Move ↑ from 122 → 124: distance = |124−122| = <strong>2</strong></li>
+      <li>Move ↑ from 124 → 183: distance = |183−124| = <strong>59</strong></li>
+      <li>Move ↑ from 183 → 199: distance = |199−183| = <strong>16</strong> (reach end)</li>
+      <li><em>Jump from 199 → 0 (NOT counted)</em></li>
+      <li>Move ↑ from 0 → 14: distance = |14−0| = <strong>14</strong></li>
+      <li>Move ↑ from 14 → 37: distance = |37−14| = <strong>23</strong></li>
+    </ol>
+    <div class="formula" style="margin-top:14px">THM = 12+2+31+24+2+59+16+14+23 = <strong>183</strong></div>
+  </div>
+
+  <h3>Worked Example: SSTF Greedy Selection <span class="badge m">Practice</span></h3>
+  <div class="card">
+    <p style="font-size:13px;color:var(--ink2);margin-bottom:10px">At each step, distances from current position to all remaining requests:</p>
+    <div class="tbl-wrap" style="margin:0">
+      <table>
+        <thead><tr><th>At</th><th>Remaining</th><th>Distances</th><th>Pick</th><th>Move</th></tr></thead>
+        <tbody>
+          <tr><td>53</td><td>98,183,37,122,14,124,65,67</td><td>65→12, 67→14, 37→16…</td><td>65</td><td>12</td></tr>
+          <tr><td>65</td><td>98,183,37,122,14,124,67</td><td>67→2, 37→28, 98→33…</td><td>67</td><td>2</td></tr>
+          <tr><td>67</td><td>98,183,37,122,14,124</td><td>37→30, 98→31…</td><td>37</td><td>30</td></tr>
+          <tr><td>37</td><td>98,183,122,14,124</td><td>14→23, 98→61…</td><td>14</td><td>23</td></tr>
+          <tr><td>14</td><td>98,183,122,124</td><td>98→84, 122→108…</td><td>98</td><td>84</td></tr>
+          <tr><td>98</td><td>183,122,124</td><td>122→24, 124→26, 183→85</td><td>122</td><td>24</td></tr>
+          <tr><td>122</td><td>183,124</td><td>124→2, 183→61</td><td>124</td><td>2</td></tr>
+          <tr class="hl"><td>124</td><td>183</td><td>183→59</td><td>183</td><td>59</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="formula" style="margin-top:10px">THM = 12+2+30+23+84+24+2+59 = <strong>236</strong></div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section id="comparison">
+  <div class="eyebrow">Section 11 — Analysis</div>
+  <h2>Algorithm Comparison</h2>
+
+  <div class="cmp-grid">
+    <div class="cmp-cell hdr">Algorithm</div>
+    <div class="cmp-cell hdr">THM (lab example)</div>
+    <div class="cmp-cell hdr">Starvation?</div>
+    <div class="cmp-cell hdr">Direction needed?</div>
+
+    <div class="cmp-cell aname" style="color:var(--fcfs-c)">FCFS</div>
+    <div class="cmp-cell bad">640 (worst)</div>
+    <div class="cmp-cell good">No</div>
+    <div class="cmp-cell good">No</div>
+
+    <div class="cmp-cell aname" style="color:var(--sstf-c)">SSTF</div>
+    <div class="cmp-cell ok">236</div>
+    <div class="cmp-cell bad">Yes</div>
+    <div class="cmp-cell good">No</div>
+
+    <div class="cmp-cell aname" style="color:var(--scan-c)">SCAN</div>
+    <div class="cmp-cell ok">236</div>
+    <div class="cmp-cell good">No</div>
+    <div class="cmp-cell bad">Yes</div>
+
+    <div class="cmp-cell aname" style="color:var(--cscan-c)">C-SCAN</div>
+    <div class="cmp-cell good">183</div>
+    <div class="cmp-cell good">No</div>
+    <div class="cmp-cell bad">Yes</div>
+
+    <div class="cmp-cell aname" style="color:var(--look-c)">LOOK</div>
+    <div class="cmp-cell good">208</div>
+    <div class="cmp-cell good">No</div>
+    <div class="cmp-cell bad">Yes</div>
+
+    <div class="cmp-cell aname" style="color:var(--clook-c)">C-LOOK</div>
+    <div class="cmp-cell good">153 (best)</div>
+    <div class="cmp-cell good">No</div>
+    <div class="cmp-cell bad">Yes</div>
+  </div>
+
+  <h3>Which Algorithm Should You Use?</h3>
+  <div class="three-col">
+    <div class="callout success">
+      <h4>Use SSTF when…</h4>
+      <p style="margin:0;font-size:13px">Throughput matters most and requests cluster around a few cylinders. Common in lightly loaded desktop systems.</p>
+    </div>
+    <div class="callout info">
+      <h4>Use SCAN/LOOK when…</h4>
+      <p style="margin:0;font-size:13px">Medium load, need to prevent starvation. LOOK is preferred over SCAN (no wasted head travel to disk ends).</p>
+    </div>
+    <div class="callout warn" style="border-color:var(--purple)">
+      <h4>Use C-SCAN/C-LOOK when…</h4>
+      <p style="margin:0;font-size:13px">Uniform wait time is critical — databases, servers with many concurrent I/O requests. C-LOOK is the most efficient variant.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CODE -->
+<section id="code">
+  <div class="eyebrow">Section 12 — Implementation</div>
+  <h2>C Code Implementation</h2>
+
+  <div class="atabs" id="ctabs">
+    <button class="atab sel-fcfs" id="cbtn-fcfs"  onclick="switchCode('fcfs')">FCFS</button>
+    <button class="atab"          id="cbtn-sstf"  onclick="switchCode('sstf')">SSTF</button>
+    <button class="atab"          id="cbtn-scan"  onclick="switchCode('scan')">SCAN</button>
+    <button class="atab"          id="cbtn-cscan" onclick="switchCode('cscan')">C-SCAN</button>
+    <button class="atab"          id="cbtn-look"  onclick="switchCode('look')">LOOK</button>
+    <button class="atab"          id="cbtn-clook" onclick="switchCode('clook')">C-LOOK</button>
+  </div>
+
+  <div class="card" style="border-radius:0 12px 12px 12px;margin-top:0;padding:0;overflow:hidden;border-top:none">
+
+    <div id="code-fcfs">
+<div class="code-wrap"><span class="lang-tag">C</span>
+<pre><span class="cm">/* FCFS Disk Scheduling — serve in arrival order */</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">fcfs</span>(<span class="ty">int</span> queue[], <span class="ty">int</span> n, <span class="ty">int</span> head) {
+    <span class="ty">int</span> thm = <span class="num">0</span>, cur = head;
+    printf(<span class="str">"FCFS: %d"</span>, head);
+    <span class="kw">for</span>(<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        thm += abs(queue[i] - cur);   <span class="cm">/* add seek distance */</span>
+        cur  = queue[i];
+        printf(<span class="str">" → %d"</span>, cur);
+    }
+    printf(<span class="str">"\nTHM = %d\n"</span>, thm);
+    <span class="kw">return</span> thm;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> q[] = {<span class="num">98,183,37,122,14,124,65,67</span>};
+    <span class="ty">int</span> n   = <span class="kw">sizeof</span>(q)/<span class="kw">sizeof</span>(q[<span class="num">0</span>]);
+    <span class="fn">fcfs</span>(q, n, <span class="num">53</span>);   <span class="cm">/* expected: 640 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+
+    <div id="code-sstf" style="display:none">
+<div class="code-wrap"><span class="lang-tag">C</span>
+<pre><span class="cm">/* SSTF Disk Scheduling — always pick closest request */</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="kw">#define</span> <span class="ty">INF</span> <span class="num">99999</span>
+
+<span class="ty">int</span> <span class="fn">sstf</span>(<span class="ty">int</span> queue[], <span class="ty">int</span> n, <span class="ty">int</span> head) {
+    <span class="ty">int</span> visited[n], thm = <span class="num">0</span>, cur = head;
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++) visited[i]=<span class="num">0</span>;
+
+    printf(<span class="str">"SSTF: %d"</span>, head);
+    <span class="kw">for</span>(<span class="ty">int</span> count = <span class="num">0</span>; count &lt; n; count++) {
+        <span class="ty">int</span> minDist = INF, pick = -<span class="num">1</span>;
+
+        <span class="cm">/* Find unvisited request closest to current position */</span>
+        <span class="kw">for</span>(<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+            <span class="kw">if</span>(!visited[i] &amp;&amp; abs(queue[i]-cur) &lt; minDist) {
+                minDist = abs(queue[i]-cur);
+                pick    = i;
+            }
+        }
+        visited[pick] = <span class="num">1</span>;
+        thm += abs(queue[pick] - cur);
+        cur  = queue[pick];
+        printf(<span class="str">" → %d"</span>, cur);
+    }
+    printf(<span class="str">"\nTHM = %d\n"</span>, thm);
+    <span class="kw">return</span> thm;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> q[] = {<span class="num">98,183,37,122,14,124,65,67</span>};
+    <span class="ty">int</span> n   = <span class="kw">sizeof</span>(q)/<span class="kw">sizeof</span>(q[<span class="num">0</span>]);
+    <span class="fn">sstf</span>(q, n, <span class="num">53</span>);   <span class="cm">/* expected: 236 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+
+    <div id="code-scan" style="display:none">
+<div class="code-wrap"><span class="lang-tag">C</span>
+<pre><span class="cm">/* SCAN (Elevator) Disk Scheduling
+ * dir: 0 = moving toward lower, 1 = moving toward higher
+ * Always goes to disk end (0 or maxCyl-1) before reversing */</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">cmp</span>(<span class="ty">const void</span>*a,<span class="ty">const void</span>*b){<span class="kw">return</span>*(ty int*)a - *(ty int*)b;}
+
+<span class="ty">int</span> <span class="fn">scan</span>(<span class="ty">int</span> queue[], <span class="ty">int</span> n, <span class="ty">int</span> head, <span class="ty">int</span> dir, <span class="ty">int</span> maxCyl) {
+    <span class="ty">int</span> sorted[n+<span class="num">1</span>], thm = <span class="num">0</span>, cur = head;
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++) sorted[i]=queue[i];
+    qsort(sorted, n, <span class="kw">sizeof</span>(<span class="ty">int</span>), cmp);
+
+    printf(<span class="str">"SCAN: %d"</span>, head);
+
+    <span class="kw">if</span>(dir == <span class="num">0</span>) {
+        <span class="cm">/* Moving toward lower cylinders first */</span>
+        <span class="kw">for</span>(<span class="ty">int</span> i = n-<span class="num">1</span>; i &gt;= <span class="num">0</span>; i--)     <span class="cm">/* service requests below head */</span>
+            <span class="kw">if</span>(sorted[i] &lt;= head) {
+                thm += abs(sorted[i]-cur); cur=sorted[i]; printf(<span class="str">" → %d"</span>,cur);
+            }
+        <span class="cm">/* Go to cylinder 0 */</span>
+        thm += cur; printf(<span class="str">" → 0"</span>); cur = <span class="num">0</span>;
+        <span class="kw">for</span>(<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; i++)           <span class="cm">/* service requests above head */</span>
+            <span class="kw">if</span>(sorted[i] &gt; head) {
+                thm += abs(sorted[i]-cur); cur=sorted[i]; printf(<span class="str">" → %d"</span>,cur);
+            }
+    } <span class="kw">else</span> {
+        <span class="cm">/* Moving toward higher cylinders first */</span>
+        <span class="kw">for</span>(<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+            <span class="kw">if</span>(sorted[i] &gt;= head) {
+                thm += abs(sorted[i]-cur); cur=sorted[i]; printf(<span class="str">" → %d"</span>,cur);
+            }
+        thm += (maxCyl-<span class="num">1</span>-cur); printf(<span class="str">" → %d"</span>,maxCyl-<span class="num">1</span>); cur=maxCyl-<span class="num">1</span>;
+        <span class="kw">for</span>(<span class="ty">int</span> i = n-<span class="num">1</span>; i &gt;= <span class="num">0</span>; i--)
+            <span class="kw">if</span>(sorted[i] &lt; head) {
+                thm += abs(sorted[i]-cur); cur=sorted[i]; printf(<span class="str">" → %d"</span>,cur);
+            }
+    }
+    printf(<span class="str">"\nTHM = %d\n"</span>, thm);
+    <span class="kw">return</span> thm;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> q[] = {<span class="num">98,183,37,122,14,124,65,67</span>};
+    <span class="ty">int</span> n = <span class="kw">sizeof</span>(q)/<span class="kw">sizeof</span>(q[<span class="num">0</span>]);
+    <span class="fn">scan</span>(q, n, <span class="num">53</span>, <span class="num">0</span>, <span class="num">200</span>); <span class="cm">/* dir=0: moving toward 0 first → THM=236 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+
+    <div id="code-cscan" style="display:none">
+<div class="code-wrap"><span class="lang-tag">C</span>
+<pre><span class="cm">/* C-SCAN: moves in one direction only, jumps back at end */</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">cmp</span>(<span class="ty">const void</span>*a,<span class="ty">const void</span>*b){<span class="kw">return</span>*(int*)a-*(int*)b;}
+
+<span class="ty">int</span> <span class="fn">cscan</span>(<span class="ty">int</span> q[], <span class="ty">int</span> n, <span class="ty">int</span> head, <span class="ty">int</span> maxCyl) {
+    <span class="ty">int</span> sorted[n], thm = <span class="num">0</span>, cur = head;
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++) sorted[i]=q[i];
+    qsort(sorted, n, <span class="kw">sizeof</span>(<span class="ty">int</span>), cmp);
+
+    printf(<span class="str">"C-SCAN: %d"</span>, head);
+
+    <span class="cm">/* Phase 1: service all requests >= head (moving up) */</span>
+    <span class="kw">for</span>(<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        <span class="kw">if</span>(sorted[i] &gt;= head) {
+            thm += abs(sorted[i]-cur); cur=sorted[i];
+            printf(<span class="str">" → %d"</span>,cur);
+        }
+
+    <span class="cm">/* Reach end of disk */</span>
+    thm += (maxCyl-<span class="num">1</span>) - cur;
+    printf(<span class="str">" → %d"</span>, maxCyl-<span class="num">1</span>);
+
+    <span class="cm">/* Jump to cylinder 0 — NOT counted in THM */</span>
+    printf(<span class="str">" [jump→0]"</span>); cur = <span class="num">0</span>;
+
+    <span class="cm">/* Phase 2: service remaining requests < head */</span>
+    <span class="kw">for</span>(<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        <span class="kw">if</span>(sorted[i] &lt; head) {
+            thm += abs(sorted[i]-cur); cur=sorted[i];
+            printf(<span class="str">" → %d"</span>,cur);
+        }
+
+    printf(<span class="str">"\nTHM = %d\n"</span>, thm);
+    <span class="kw">return</span> thm;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> q[] = {<span class="num">98,183,37,122,14,124,65,67</span>};
+    <span class="ty">int</span> n   = <span class="kw">sizeof</span>(q)/<span class="kw">sizeof</span>(q[<span class="num">0</span>]);
+    <span class="fn">cscan</span>(q, n, <span class="num">53</span>, <span class="num">200</span>);  <span class="cm">/* expected: 183 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+
+    <div id="code-look" style="display:none">
+<div class="code-wrap"><span class="lang-tag">C</span>
+<pre><span class="cm">/* LOOK: like SCAN but reverses at last request, not disk end */</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">cmp</span>(<span class="ty">const void</span>*a,<span class="ty">const void</span>*b){<span class="kw">return</span>*(int*)a-*(int*)b;}
+
+<span class="ty">int</span> <span class="fn">look</span>(<span class="ty">int</span> q[], <span class="ty">int</span> n, <span class="ty">int</span> head, <span class="ty">int</span> dir) {
+    <span class="ty">int</span> sorted[n], thm=<span class="num">0</span>, cur=head;
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++) sorted[i]=q[i];
+    qsort(sorted,n,<span class="kw">sizeof</span>(<span class="ty">int</span>),cmp);
+
+    printf(<span class="str">"LOOK: %d"</span>, head);
+
+    <span class="kw">if</span>(dir == <span class="num">0</span>) {
+        <span class="cm">/* Moving toward lower first — service requests &lt;= head going down */</span>
+        <span class="kw">for</span>(<span class="ty">int</span> i=n-<span class="num">1</span>;i&gt;=<span class="num">0</span>;i--)
+            <span class="kw">if</span>(sorted[i]&lt;=head){thm+=abs(sorted[i]-cur);cur=sorted[i];printf(<span class="str">" → %d"</span>,cur);}
+        <span class="cm">/* Reverse at lowest request — NOT at cylinder 0 */</span>
+        <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++)
+            <span class="kw">if</span>(sorted[i]&gt;head){thm+=abs(sorted[i]-cur);cur=sorted[i];printf(<span class="str">" → %d"</span>,cur);}
+    } <span class="kw">else</span> {
+        <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++)
+            <span class="kw">if</span>(sorted[i]&gt;=head){thm+=abs(sorted[i]-cur);cur=sorted[i];printf(<span class="str">" → %d"</span>,cur);}
+        <span class="kw">for</span>(<span class="ty">int</span> i=n-<span class="num">1</span>;i&gt;=<span class="num">0</span>;i--)
+            <span class="kw">if</span>(sorted[i]&lt;head){thm+=abs(sorted[i]-cur);cur=sorted[i];printf(<span class="str">" → %d"</span>,cur);}
+    }
+    printf(<span class="str">"\nTHM = %d\n"</span>, thm);
+    <span class="kw">return</span> thm;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> q[]={<span class="num">98,183,37,122,14,124,65,67</span>};
+    <span class="ty">int</span> n=<span class="kw">sizeof</span>(q)/<span class="kw">sizeof</span>(q[<span class="num">0</span>]);
+    <span class="fn">look</span>(q,n,<span class="num">53</span>,<span class="num">0</span>); <span class="cm">/* dir=0 → THM=208 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+
+    <div id="code-clook" style="display:none">
+<div class="code-wrap"><span class="lang-tag">C</span>
+<pre><span class="cm">/* C-LOOK: one direction, jumps to first request (not cylinder 0) */</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">cmp</span>(<span class="ty">const void</span>*a,<span class="ty">const void</span>*b){<span class="kw">return</span>*(int*)a-*(int*)b;}
+
+<span class="ty">int</span> <span class="fn">clook</span>(<span class="ty">int</span> q[], <span class="ty">int</span> n, <span class="ty">int</span> head) {
+    <span class="ty">int</span> sorted[n], thm=<span class="num">0</span>, cur=head;
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++) sorted[i]=q[i];
+    qsort(sorted,n,<span class="kw">sizeof</span>(<span class="ty">int</span>),cmp);
+
+    printf(<span class="str">"C-LOOK: %d"</span>, head);
+
+    <span class="cm">/* Phase 1: service all requests >= head (going up) */</span>
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++)
+        <span class="kw">if</span>(sorted[i]&gt;=head){
+            thm+=abs(sorted[i]-cur); cur=sorted[i];
+            printf(<span class="str">" → %d"</span>,cur);
+        }
+
+    <span class="cm">/* Jump to smallest request (NOT cylinder 0) — not counted */</span>
+    printf(<span class="str">" [jump→%d]"</span>, sorted[<span class="num">0</span>]); cur=sorted[<span class="num">0</span>];
+
+    <span class="cm">/* Phase 2: service remaining requests < original head */</span>
+    <span class="kw">for</span>(<span class="ty">int</span> i=<span class="num">0</span>;i&lt;n;i++)
+        <span class="kw">if</span>(sorted[i]&lt;head){
+            thm+=abs(sorted[i]-cur); cur=sorted[i];
+            printf(<span class="str">" → %d"</span>,cur);
+        }
+
+    printf(<span class="str">"\nTHM = %d\n"</span>, thm);
+    <span class="kw">return</span> thm;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> q[]={<span class="num">98,183,37,122,14,124,65,67</span>};
+    <span class="ty">int</span> n=<span class="kw">sizeof</span>(q)/<span class="kw">sizeof</span>(q[<span class="num">0</span>]);
+    <span class="fn">clook</span>(q,n,<span class="num">53</span>); <span class="cm">/* expected: 153 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- MISTAKES -->
+<section id="mistakes">
+  <div class="eyebrow">Section 13 — Exam Prep</div>
+  <h2>Common Mistakes</h2>
+
+  <div class="mistake">
+    <div class="m-icon x">✗</div>
+    <div><strong>Counting the C-SCAN/C-LOOK jump in THM</strong><br>
+    <span style="font-size:13px;color:var(--ink2)">The return journey (199→0 in C-SCAN, or 183→14 in C-LOOK) is NOT counted in THM. It's a repositioning, not a seek. Students who add this jump get wrong answers on every C-SCAN/C-LOOK calculation.</span></div>
+  </div>
+
+  <div class="mistake">
+    <div class="m-icon x">✗</div>
+    <div><strong>Not knowing the starting direction for SCAN/LOOK</strong><br>
+    <span style="font-size:13px;color:var(--ink2)">The direction is always inferred from the previous head position. Previous=125, current=53 → head was moving toward lower cylinders. If the problem doesn't give previous position, assume given direction or state your assumption.</span></div>
+  </div>
+
+  <div class="mistake">
+    <div class="m-icon x">✗</div>
+    <div><strong>SCAN vs LOOK confusion at the ends</strong><br>
+    <span style="font-size:13px;color:var(--ink2)">SCAN always travels to cylinder 0 or 199 before reversing, even if no request is there (adds wasted travel). LOOK only goes to the last actual request before reversing. In the lab example, SCAN adds 14 cylinders (14→0) that LOOK saves.</span></div>
+  </div>
+
+  <div class="mistake">
+    <div class="m-icon x">✗</div>
+    <div><strong>SSTF starvation claim — "it's always bad"</strong><br>
+    <span style="font-size:13px;color:var(--ink2)">SSTF can starve requests but gives excellent average seek time for moderate loads. It's not "bad" — it's a valid tradeoff. SCAN-family algorithms prevent starvation but have higher average seek times under light loads.</span></div>
+  </div>
+
+  <div class="mistake">
+    <div class="m-icon x">✗</div>
+    <div><strong>SSTF greedily choosing wrong cylinder when distances tie</strong><br>
+    <span style="font-size:13px;color:var(--ink2)">When two requests are equidistant, pick either one (typically the one in the current direction of movement, or the lower-numbered one). State your tiebreaking rule in exam answers.</span></div>
+  </div>
+
+  <div class="mistake">
+    <div class="m-icon ok">✓</div>
+    <div><strong>THM formula is always a sum of absolute differences</strong><br>
+    <span style="font-size:13px;color:var(--ink2)">THM = Σ|next − current|. You never subtract — all terms are positive. If you get a negative intermediate value, you've made an ordering mistake.</span></div>
+  </div>
+</section>
+
+<!-- VIVA -->
+<section id="viva">
+  <div class="eyebrow">Section 14 — Exam Prep</div>
+  <h2>Viva / Exam Questions</h2>
+
+  <h3>Short Answer</h3>
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">What is seek time and why do we minimise it? <span class="ch">▾</span></div>
+  <div class="qa-a">Seek time is the time for the disk arm to move to the required cylinder (track). It is the dominant component of disk access time (3–15ms), far larger than rotational latency (~4ms) or transfer time. Minimising seek time directly reduces I/O response time and increases throughput.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">What is Total Head Movement (THM)? <span class="ch">▾</span></div>
+  <div class="qa-a">THM is the sum of all absolute distances the disk head travels to service all pending requests in a given queue. It is the standard metric for comparing disk scheduling algorithms. Formula: THM = Σ|cylinder[i+1] − cylinder[i]| for each consecutive pair in the service order. Lower THM = better performance.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">Why can SSTF cause starvation? Give an example. <span class="ch">▾</span></div>
+  <div class="qa-a">SSTF always picks the closest request. If requests cluster near cylinder 50 and a request arrives at cylinder 190, it might never get served — every time the head finishes a close request, another close one arrives, keeping the head near 50 indefinitely. This is starvation: the far request waits forever. Fix: add an aging mechanism or switch to SCAN-family.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">What is the difference between SCAN and C-SCAN? <span class="ch">▾</span></div>
+  <div class="qa-a">SCAN sweeps to the disk end, then reverses and services requests on the return trip too. C-SCAN sweeps to the disk end, then immediately jumps back to the beginning (without servicing on return), then sweeps again. C-SCAN provides more uniform waiting times because requests near the beginning of the disk don't have to wait for a full sweep-and-return — they're served on the very next upward sweep.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">What is the difference between SCAN and LOOK? <span class="ch">▾</span></div>
+  <div class="qa-a">SCAN travels all the way to the physical end of the disk (cylinder 0 or N−1) before reversing. LOOK only travels to the last pending request before reversing. LOOK is more efficient — it avoids wasted head movement beyond the last request. In the lab example, LOOK saves 28 cylinders compared to SCAN (208 vs 236).</div></div>
+
+  <h3 style="margin-top:28px">Trick / Long Questions</h3>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 TRICK: SSTF and SCAN give the same THM (236) in the lab example — does this mean they're equivalent? <span class="ch">▾</span></div>
+  <div class="qa-a"><strong>No</strong> — equal THM for one example doesn't mean equivalent algorithms. Key differences: (1) SSTF can cause <strong>starvation</strong>; SCAN cannot. (2) SSTF's THM varies widely with different queues and can be much worse than SCAN if the queue changes. (3) SCAN has more predictable worst-case behaviour. (4) Their service orders are completely different — the same THM is a numerical coincidence for this specific input.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 When would FCFS actually be the best choice? <span class="ch">▾</span></div>
+  <div class="qa-a">FCFS is best (or at least acceptable) when: (1) The disk queue is very short — with 1–2 requests, all algorithms give the same result. (2) Requests naturally arrive in cylinder order already. (3) Fairness is paramount and response time doesn't matter. (4) In SSD/NVMe storage where there is no physical seek — all locations are accessed in equal time, making seek optimisation irrelevant. In practice, modern SSDs use FCFS or simple FIFO variants for this reason.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 Why does C-LOOK give a lower THM than C-SCAN (153 vs 183)? <span class="ch">▾</span></div>
+  <div class="qa-a">C-SCAN always travels to the physical disk end (cylinder 199) and jumps from 0, even if the highest request is at 183 and the lowest is at 14. This wastes: (199−183)=16 cylinders going beyond the last request, and (14−0)=14 cylinders served from 0 instead of 14 — but wait, those 14 are counted. The key saving is (199−183)=16 cylinders of travel beyond the last request. C-LOOK doesn't go to 199 — it stops at 183 and jumps to 14 (the first request). So C-LOOK saves 16+14=30 cylinders? Actually 183−153=30. Exactly: C-LOOK saves travel to disk-end AND from cylinder-0 to first-request.</div></div>
+
+  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 Does disk scheduling still matter for SSDs? <span class="ch">▾</span></div>
+  <div class="qa-a"><strong>Largely no</strong> for seek time — SSDs have no moving parts, so access time is uniform regardless of "cylinder." However: (1) SSDs still benefit from I/O scheduling for <strong>write coalescing</strong> and managing write amplification. (2) <strong>NCQ (Native Command Queuing)</strong> and <strong>NVMe queues</strong> still reorder requests, but for different reasons (parallelism, wear levelling) not seek optimisation. (3) HDD disk scheduling remains fully relevant for spinning disks, which are still common in bulk storage and servers.</div></div>
+</section>
+
+<!-- SUMMARY -->
+<section id="summary">
+  <div class="eyebrow">Section 15 — Quick Revision</div>
+  <h2>Summary Sheet</h2>
+
+  <div class="sum-grid">
+    <div class="sum-card">
+      <h4>FCFS</h4>
+      <ul>
+        <li>Service in arrival order</li>
+        <li>No reordering — simplest</li>
+        <li>THM = 640 (lab example)</li>
+        <li>No starvation; worst performance</li>
+        <li>Good for SSD (no seek cost)</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>SSTF</h4>
+      <ul>
+        <li>Always pick nearest request</li>
+        <li>Greedy — great average THM</li>
+        <li>THM = 236 (lab example)</li>
+        <li>Can starve distant requests</li>
+        <li>No direction tracking needed</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>SCAN (Elevator)</h4>
+      <ul>
+        <li>Sweep to disk end, reverse</li>
+        <li>Services both directions</li>
+        <li>THM = 236 (lab example)</li>
+        <li>No starvation; needs direction</li>
+        <li>Uneven wait — far end waits longer</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>C-SCAN</h4>
+      <ul>
+        <li>One direction only, jump at end</li>
+        <li>Uniform waiting times</li>
+        <li>THM = 183 (lab example)</li>
+        <li>Jump (199→0) NOT counted</li>
+        <li>Good for servers/databases</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>LOOK</h4>
+      <ul>
+        <li>SCAN but no wasted end travel</li>
+        <li>Reverses at last request</li>
+        <li>THM = 208 (lab example)</li>
+        <li>Saves travel vs SCAN</li>
+        <li>LOOK ≡ Smarter SCAN</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>C-LOOK</h4>
+      <ul>
+        <li>C-SCAN but no wasted end travel</li>
+        <li>Jump to first request (not 0)</li>
+        <li>THM = 153 (lab example, best!)</li>
+        <li>Jump NOT counted in THM</li>
+        <li>Most efficient overall</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>THM Results (lab example)</h4>
+      <ul>
+        <li>FCFS: 640 (worst)</li>
+        <li>SSTF: 236</li>
+        <li>SCAN: 236</li>
+        <li>C-SCAN: 183</li>
+        <li>LOOK: 208</li>
+        <li>C-LOOK: 153 (best)</li>
+      </ul>
+    </div>
+    <div class="sum-card">
+      <h4>Key Rules</h4>
+      <ul>
+        <li>THM = Σ|next − current|</li>
+        <li>Direction from previous position</li>
+        <li>SCAN goes to 0/199 — LOOK does not</li>
+        <li>C-* jumps are never counted</li>
+        <li>Only SSTF can starve</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<button class="scroll-top" id="stbtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+/* ── Progress + scroll spy ── */
+window.addEventListener('scroll',()=>{
+  const e=document.documentElement;
+  const p=e.scrollTop/(e.scrollHeight-e.clientHeight)*100;
+  document.getElementById('prog').style.width=p+'%';
+  document.getElementById('stbtn').style.display=p>8?'flex':'none';
+  document.querySelectorAll('nav a').forEach(a=>{
+    const s=document.querySelector(a.getAttribute('href'));
+    if(s){const r=s.getBoundingClientRect();a.classList.toggle('active',r.top<=80&&r.bottom>80);}
+  });
+});
+
+/* ── Viva toggle ── */
+function tQ(el){
+  el.classList.toggle('open');
+  const a=el.nextElementSibling;
+  a.style.display=a.style.display==='block'?'none':'block';
+}
+
+/* ── Code tabs ── */
+const codeAlgos=['fcfs','sstf','scan','cscan','look','clook'];
+const algoColors={fcfs:'var(--fcfs-c)',sstf:'var(--sstf-c)',scan:'var(--scan-c)',cscan:'var(--cscan-c)',look:'var(--look-c)',clook:'var(--clook-c)'};
+function switchCode(a){
+  codeAlgos.forEach(x=>{
+    const el=document.getElementById('code-'+x);
+    if(el) el.style.display=x===a?'block':'none';
+    const btn=document.getElementById('cbtn-'+x);
+    if(btn) btn.className='atab'+(x===a?' sel-'+x:'');
+  });
+}
+
+/* ── Simulator state ── */
+let currentAlgo='fcfs';
+function setAlgo(a){
+  currentAlgo=a;
+  codeAlgos.forEach(x=>{
+    const b=document.getElementById('tab-'+x);
+    if(b) b.className='atab'+(x===a?' sel-'+x:'');
+  });
+}
+
+function parseQueue(){
+  return document.getElementById('queue').value.split(/[,\s]+/).map(x=>parseInt(x)).filter(x=>!isNaN(x));
+}
+
+/* ── Algorithm implementations ── */
+function runFCFS(queue,head){
+  const order=[head,...queue];
+  let thm=0;
+  for(let i=1;i<order.length;i++) thm+=Math.abs(order[i]-order[i-1]);
+  return{order,thm};
+}
+
+function runSSTF(queue,head){
+  const rem=[...queue];const order=[head];let cur=head,thm=0;
+  while(rem.length){
+    let best=0,bd=Math.abs(rem[0]-cur);
+    for(let i=1;i<rem.length;i++){const d=Math.abs(rem[i]-cur);if(d<bd){bd=d;best=i;}}
+    thm+=bd;cur=rem[best];order.push(cur);rem.splice(best,1);
+  }
+  return{order,thm};
+}
+
+function runSCAN(queue,head,dir,maxCyl){
+  const sorted=[...queue].sort((a,b)=>a-b);
+  const order=[head];let cur=head,thm=0;
+  if(dir==='down'){
+    for(let i=sorted.length-1;i>=0;i--) if(sorted[i]<=head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+    thm+=cur;order.push(0);cur=0;
+    for(let i=0;i<sorted.length;i++) if(sorted[i]>head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  } else {
+    for(let i=0;i<sorted.length;i++) if(sorted[i]>=head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+    thm+=(maxCyl-1-cur);order.push(maxCyl-1);cur=maxCyl-1;
+    for(let i=sorted.length-1;i>=0;i--) if(sorted[i]<head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  }
+  return{order,thm};
+}
+
+function runCSCAN(queue,head,maxCyl){
+  const sorted=[...queue].sort((a,b)=>a-b);
+  const order=[head];let cur=head,thm=0;
+  for(let i=0;i<sorted.length;i++) if(sorted[i]>=head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  thm+=(maxCyl-1-cur);order.push(maxCyl-1);
+  order.push('J→0');cur=0; // jump marker
+  for(let i=0;i<sorted.length;i++) if(sorted[i]<head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  return{order,thm};
+}
+
+function runLOOK(queue,head,dir){
+  const sorted=[...queue].sort((a,b)=>a-b);
+  const order=[head];let cur=head,thm=0;
+  if(dir==='down'){
+    for(let i=sorted.length-1;i>=0;i--) if(sorted[i]<=head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+    for(let i=0;i<sorted.length;i++) if(sorted[i]>head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  } else {
+    for(let i=0;i<sorted.length;i++) if(sorted[i]>=head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+    for(let i=sorted.length-1;i>=0;i--) if(sorted[i]<head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  }
+  return{order,thm};
+}
+
+function runCLOOK(queue,head){
+  const sorted=[...queue].sort((a,b)=>a-b);
+  const order=[head];let cur=head,thm=0;
+  for(let i=0;i<sorted.length;i++) if(sorted[i]>=head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  order.push('J→'+sorted[0]);cur=sorted[0];
+  for(let i=0;i<sorted.length;i++) if(sorted[i]<head){thm+=Math.abs(sorted[i]-cur);cur=sorted[i];order.push(cur);}
+  return{order,thm};
+}
+
+function getResult(algo,queue,head,maxCyl,dir){
+  switch(algo){
+    case 'fcfs':  return runFCFS(queue,head);
+    case 'sstf':  return runSSTF(queue,head);
+    case 'scan':  return runSCAN(queue,head,dir,maxCyl);
+    case 'cscan': return runCSCAN(queue,head,maxCyl);
+    case 'look':  return runLOOK(queue,head,dir);
+    case 'clook': return runCLOOK(queue,head);
+  }
+}
+
+/* ── Canvas drawing ── */
+function drawDisk(result,maxCyl,algo){
+  const canvas=document.getElementById('diskCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle='#faf3ea';
+  ctx.fillRect(0,0,W,H);
+
+  const PAD_L=60, PAD_R=24, PAD_T=30, PAD_B=50;
+  const trackW=W-PAD_L-PAD_R;
+  const nSteps=result.order.filter(x=>typeof x==='number').length;
+  const stepH=nSteps>1?(H-PAD_T-PAD_B)/(nSteps-1):H/2;
+
+  function xPos(cyl){ return PAD_L + (cyl/maxCyl)*trackW; }
+
+  // Grid lines
+  ctx.strokeStyle='rgba(160,110,60,0.08)';
+  ctx.lineWidth=0.5;
+  for(let c=0;c<=maxCyl;c+=20){
+    const x=xPos(c);
+    ctx.beginPath(); ctx.moveTo(x,PAD_T-10); ctx.lineTo(x,H-PAD_B+10); ctx.stroke();
+  }
+
+  // Axis
+  ctx.strokeStyle='rgba(160,110,60,0.3)';
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD_L,H-PAD_B+14);ctx.lineTo(W-PAD_R,H-PAD_B+14);ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle='#8a6a48';
+  ctx.font='10px DM Mono, monospace';
+  ctx.textAlign='center';
+  for(let c=0;c<=maxCyl;c+=20){
+    ctx.fillText(c,xPos(c),H-PAD_B+26);
+  }
+  ctx.fillStyle='#5a4228';
+  ctx.font='11px DM Mono, monospace';
+  ctx.textAlign='left';
+  ctx.fillText('Cylinder',PAD_L,H-PAD_B+38);
+
+  // Get colour
+  const colorMap={fcfs:'#c0622a',sstf:'#2a7a5c',scan:'#2a5fa0',cscan:'#6b3fa0',look:'#b07a10',clook:'#1a7a82'};
+  const col=colorMap[algo]||'#c0622a';
+
+  // Draw path
+  const numericOrder=result.order.filter(x=>typeof x==='number');
+  ctx.strokeStyle=col;
+  ctx.lineWidth=2;
+  ctx.lineJoin='round';
+
+  // Check jump positions
+  const jumpAfter={};
+  result.order.forEach((v,i)=>{
+    if(typeof v==='string'&&v.startsWith('J→')){
+      const prevIdx=result.order.slice(0,i).filter(x=>typeof x==='number').length-1;
+      jumpAfter[prevIdx]=true;
+    }
+  });
+
+  ctx.beginPath();
+  let numIdx=0;
+  for(let i=0;i<result.order.length;i++){
+    const v=result.order[i];
+    if(typeof v!=='number') continue;
+    const x=xPos(v);
+    const y=PAD_T+numIdx*stepH;
+    if(numIdx===0){ctx.moveTo(x,y);}
+    else{
+      // Check if previous step was a jump
+      const wasJump=result.order.slice(0,i).some((u,j)=>typeof u==='string'&&result.order.slice(0,j+1).filter(x=>typeof x==='number').length===numIdx);
+      if(wasJump){
+        ctx.stroke();
+        ctx.beginPath();
+        // dashed jump line
+        ctx.setLineDash([4,4]);
+        ctx.strokeStyle='rgba(160,110,60,0.4)';
+        ctx.moveTo(xPos(result.order.filter(x=>typeof x==='number')[numIdx-1]),PAD_T+(numIdx-1)*stepH);
+        ctx.lineTo(x,y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle=col;
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+      } else {
+        ctx.lineTo(x,y);
+      }
+    }
+    numIdx++;
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw dots + labels
+  numIdx=0;
+  for(let i=0;i<result.order.length;i++){
+    const v=result.order[i];
+    if(typeof v!=='number') continue;
+    const x=xPos(v);
+    const y=PAD_T+numIdx*stepH;
+    const isFirst=numIdx===0;
+    const isLast=numIdx===numericOrder.length-1;
+
+    ctx.beginPath();
+    ctx.arc(x,y,isFirst||isLast?6:4,0,Math.PI*2);
+    ctx.fillStyle=isFirst?col:(isLast?col:'#fff');
+    ctx.fill();
+    ctx.strokeStyle=col;
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle='#2c1f0e';
+    ctx.font=isFirst?'bold 11px DM Mono':'10px DM Mono';
+    ctx.textAlign=x>W/2?'right':'left';
+    ctx.fillText(v,x+(x>W/2?-8:8),y+4);
+
+    numIdx++;
+  }
+
+  // Y-axis step labels
+  ctx.fillStyle='#8a6a48';
+  ctx.font='10px DM Mono';
+  ctx.textAlign='right';
+  numericOrder.forEach((v,i)=>{
+    ctx.fillText('S'+(i+1),PAD_L-6,PAD_T+i*stepH+4);
+  });
+}
+
+function runSim(){
+  const queue=parseQueue();
+  const head=parseInt(document.getElementById('headPos').value)||53;
+  const maxCyl=parseInt(document.getElementById('maxCyl').value)||200;
+  const dir=document.getElementById('direction').value;
+  if(!queue.length) return;
+
+  const result=getResult(currentAlgo,queue,head,maxCyl,dir);
+  drawDisk(result,maxCyl,currentAlgo);
+
+  const total=queue.length;
+  document.getElementById('statRow').innerHTML=`
+    <div class="stat-chip"><div class="val">${result.thm}</div><div class="lbl">Total Head Movement</div></div>
+    <div class="stat-chip green"><div class="val">${total}</div><div class="lbl">Requests Served</div></div>
+    <div class="stat-chip blue"><div class="val">${(result.thm/total).toFixed(1)}</div><div class="lbl">Avg Seek/Request</div></div>`;
+
+  // Seek sequence
+  const numOrder=result.order.filter(x=>typeof x==='number');
+  let seqHtml='<div class="seek-path">';
+  numOrder.forEach((v,i)=>{
+    const c=algoColors[currentAlgo]||'var(--accent)';
+    if(i===0) seqHtml+=`<span class="seek-node" style="background:rgba(192,98,42,.15);color:${c}">${v}</span>`;
+    else {
+      const dist=Math.abs(v-numOrder[i-1]);
+      seqHtml+=`<span class="seek-arrow">→</span><span class="seek-node" style="background:var(--bg3)">${v}</span><span class="seek-dist">(${dist})</span>`;
+    }
+  });
+  seqHtml+=`</div><div style="font-size:12px;color:var(--ink3);font-family:var(--mono);margin-top:6px">THM = ${result.thm}</div>`;
+  document.getElementById('seekSeqDisplay').innerHTML=seqHtml;
+  document.getElementById('compareWrap').style.display='none';
+}
+
+function compareAll(){
+  const queue=parseQueue();
+  const head=parseInt(document.getElementById('headPos').value)||53;
+  const maxCyl=parseInt(document.getElementById('maxCyl').value)||200;
+  const dir=document.getElementById('direction').value;
+  if(!queue.length) return;
+
+  const algos=[
+    {id:'fcfs', label:'FCFS'},
+    {id:'sstf', label:'SSTF'},
+    {id:'scan', label:'SCAN'},
+    {id:'cscan',label:'C-SCAN'},
+    {id:'look', label:'LOOK'},
+    {id:'clook',label:'C-LOOK'}
+  ];
+  const results=algos.map(a=>({...a,res:getResult(a.id,queue,head,maxCyl,dir)}));
+  const minTHM=Math.min(...results.map(r=>r.res.thm));
+  const maxTHM=Math.max(...results.map(r=>r.res.thm));
+
+  let html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">';
+  results.forEach(r=>{
+    const best=r.res.thm===minTHM;
+    const worst=r.res.thm===maxTHM;
+    const col=algoColors[r.id];
+    html+=`<div style="padding:16px;background:var(--bg2);border-radius:10px;border:1.5px solid ${best?col:'var(--border)'};text-align:center">
+      <div style="font-family:var(--serif);font-size:14px;font-weight:700;color:${col};margin-bottom:4px">${r.label}</div>
+      <div style="font-size:32px;font-weight:700;font-family:var(--serif);color:var(--ink);line-height:1">${r.res.thm}</div>
+      <div style="font-size:11px;color:var(--ink3)">cylinders</div>
+      ${best?`<div style="font-size:10px;font-weight:700;color:${col};margin-top:5px;text-transform:uppercase;letter-spacing:.06em">Best ✓</div>`:''}
+      ${worst?`<div style="font-size:10px;font-weight:700;color:var(--red);margin-top:5px;text-transform:uppercase;letter-spacing:.06em">Worst</div>`:''}
+    </div>`;
+  });
+  html+='</div>';
+
+  // Bar chart
+  html+='<div style="display:flex;gap:6px;align-items:flex-end;height:90px;margin-top:8px">';
+  results.forEach(r=>{
+    const h=Math.round(r.res.thm/maxTHM*80);
+    const col=algoColors[r.id];
+    html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--ink2)">${r.res.thm}</span>
+      <div style="width:100%;height:${h}px;background:${col};border-radius:4px 4px 0 0;opacity:0.75"></div>
+      <span style="font-size:10px;font-weight:600;color:var(--ink2)">${r.label}</span>
+    </div>`;
+  });
+  html+='</div>';
+
+  document.getElementById('compareOut').innerHTML=html;
+  document.getElementById('compareWrap').style.display='block';
+  document.getElementById('statRow').innerHTML='';
+  document.getElementById('seekSeqDisplay').innerHTML='';
+  ctx=document.getElementById('diskCanvas').getContext('2d');
+  ctx.clearRect(0,0,860,320);
+}
+</script>
+</body>
+</html>

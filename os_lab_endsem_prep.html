@@ -1,0 +1,2901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OS Lab EndSem Prep</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #fdf8f2;
+    --surface:  #fff9f3;
+    --border:   #e8ddd0;
+    --accent:   #b85c2b;
+    --accent2:  #2b6cb0;
+    --text:     #2d2416;
+    --muted:    #7a6a58;
+    --code-bg:  #1e1a14;
+    --code-text:#f0e6d3;
+    --hit:      #2d6a35;
+    --fault:    #8b1a1a;
+    --tag-bg:   #f0e4d7;
+    --tag-text: #6b3515;
+    font-size: 16px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 2.5rem 2rem 2rem;
+    border-bottom: 4px solid #8b4220;
+  }
+  header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  header p {
+    margin-top: 0.4rem;
+    font-size: 1rem;
+    opacity: 0.88;
+    font-style: italic;
+  }
+  .header-meta {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .badge {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 0.2rem 0.8rem;
+    font-size: 0.82rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ── Navigation ── */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  nav a {
+    color: var(--accent2);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  nav a:hover {
+    background: var(--tag-bg);
+    border-color: var(--border);
+    color: var(--accent);
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── Section titles ── */
+  .section-title {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--accent);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+    margin: 3rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title .num {
+    background: var(--accent);
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Question cards ── */
+  .qcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1.8rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .qcard-header {
+    background: var(--tag-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+  .qcard-header:hover { background: #ecddd0; }
+  .qcard-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .qtag {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    background: var(--accent);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+  }
+  .chevron {
+    font-size: 1.1rem;
+    transition: transform 0.25s;
+    color: var(--muted);
+  }
+  .qcard.open .chevron { transform: rotate(180deg); }
+  .qcard-body {
+    display: none;
+    padding: 1.4rem 1.4rem;
+  }
+  .qcard.open .qcard-body { display: block; }
+
+  /* ── Description / IO blocks ── */
+  .desc { margin-bottom: 1rem; font-size: 0.97rem; }
+  .io-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  @media (max-width: 640px) { .io-grid { grid-template-columns: 1fr; } }
+  .io-box {
+    background: #faf5ee;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+  }
+  .io-box h4 {
+    font-size: 0.78rem;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+  }
+  .io-box pre {
+    font-size: 0.82rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+  }
+
+  /* ── Code blocks ── */
+  .code-wrap {
+    margin-top: 1rem;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #3a3022;
+  }
+  .code-toolbar {
+    background: #2d2416;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.9rem;
+  }
+  .code-toolbar span {
+    font-size: 0.75rem;
+    color: #a08060;
+    font-family: 'Courier New', monospace;
+  }
+  .copy-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #d0b898;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  pre.code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.2rem 1.4rem;
+    overflow-x: auto;
+    font-family: 'Courier New', 'Consolas', 'Lucida Console', monospace;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    margin: 0;
+    tab-size: 4;
+  }
+
+  /* ── Algorithm explanation boxes ── */
+  .algo-box {
+    background: var(--surface);
+    border-left: 4px solid var(--accent2);
+    border-radius: 0 6px 6px 0;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    font-size: 0.94rem;
+  }
+  .algo-box h3 {
+    font-size: 1rem;
+    color: var(--accent2);
+    margin-bottom: 0.5rem;
+  }
+  .algo-box ul {
+    margin: 0.3rem 0 0 1.2rem;
+  }
+  .algo-box li { margin-bottom: 0.25rem; }
+  .formula {
+    background: #f5efe6;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.6rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    color: #4a3520;
+  }
+
+  /* ── Table of Contents ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.4rem 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+  .toc h2 {
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .toc-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.3rem 2rem;
+  }
+  @media (max-width: 700px) { .toc-cols { grid-template-columns: 1fr 1fr; } }
+  .toc a {
+    color: var(--accent2);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-family: 'Courier New', monospace;
+    display: block;
+    padding: 0.15rem 0;
+  }
+  .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  /* ── Comparison table ── */
+  table.cmp {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 0.8rem 0;
+  }
+  table.cmp th {
+    background: var(--tag-bg);
+    color: var(--accent);
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    border: 1px solid var(--border);
+    font-family: 'Courier New', monospace;
+  }
+  table.cmp td {
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.cmp tr:nth-child(even) { background: #faf5ee; }
+
+  /* ── Footer ── */
+  footer {
+    background: #2d2416;
+    color: #a08060;
+    text-align: center;
+    padding: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    margin-top: 3rem;
+  }
+  footer span { color: var(--accent); }
+
+  /* ── Utility ── */
+  .hit  { color: var(--hit);   font-weight: bold; }
+  .fault{ color: var(--fault); font-weight: bold; }
+  strong { color: var(--accent); }
+  .note {
+    background: #fef9f0;
+    border: 1px solid #e8d5b0;
+    border-radius: 5px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.88rem;
+    color: #5a4020;
+    margin: 0.5rem 0;
+  }
+  .note::before { content: "📌 "; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🖥️ OS Lab EndSem Prep</h1>
+  <p>Complete preparation resource — C programs, algorithms, and theory notes</p>
+  <div class="header-meta">
+    <span class="badge">18 Questions</span>
+    <span class="badge">9 C Programs</span>
+    <span class="badge">Disk Scheduling</span>
+    <span class="badge">Page Replacement</span>
+    <span class="badge">Memory Allocation</span>
+    <span class="badge">Banker's Algorithm</span>
+    <span class="badge">TLB &amp; EAT</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#core">Core Questions</a>
+  <a href="#q1">Q1 LSTF+MFU</a>
+  <a href="#q2">Q2 LCFS+LFU</a>
+  <a href="#q3">Q3 Addr Trans</a>
+  <a href="#q4">Q4 MRU Reg</a>
+  <a href="#q5">Q5 BestFit+Safety</a>
+  <a href="#q6">Q6 Optimal</a>
+  <a href="#q7">Q7 EAT</a>
+  <a href="#additional">Additional</a>
+  <a href="#algos">Algorithms</a>
+</nav>
+
+<div class="container">
+
+<!-- ── TOC ── -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <div class="toc-cols">
+    <a href="#q1">Q1 — LSTF + MFU</a>
+    <a href="#q2">Q2 — LCFS + LFU</a>
+    <a href="#q3">Q3 — Logical Addr</a>
+    <a href="#q4">Q4 — MRU Registers</a>
+    <a href="#q5">Q5 — BestFit + Safety</a>
+    <a href="#q6">Q6 — Optimal PR</a>
+    <a href="#q7">Q7 — EAT / TLB</a>
+    <a href="#q8">Q8 — SSTF</a>
+    <a href="#q9">Q9 — SCAN</a>
+    <a href="#q10">Q10 — C-SCAN</a>
+    <a href="#q11">Q11 — FIFO PR</a>
+    <a href="#q12">Q12 — LRU PR</a>
+    <a href="#q13">Q13 — Second Chance</a>
+    <a href="#q14">Q14 — Banker's Full</a>
+    <a href="#q15">Q15 — First/Worst Fit</a>
+    <a href="#q16">Q16 — Paging Trans</a>
+    <a href="#q17">Q17 — Segmentation</a>
+    <a href="#q18">Q18 — TLB Simulation</a>
+    <a href="#algos">Algorithm Reference</a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PART 1 — CORE QUESTIONS
+═════════════════════════════════════════ -->
+<h2 class="section-title" id="core">
+  <span class="num">1</span> Core Questions (Exam Pattern)
+</h2>
+
+<!-- Q1 -->
+<div class="qcard open" id="q1">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q1</span>
+      LSTF Disk Scheduling + MFU Page Replacement
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      <strong>LSTF (Largest Seek Time First)</strong> is a contrarian disk scheduling policy that
+      services the cylinder requiring the <em>largest</em> seek distance first — useful to study as a worst-case contrast.
+      The resulting visit order becomes the page reference string, which is then processed with
+      <strong>MFU (Most Frequently Used)</strong> page replacement — evicts the most frequently accessed page.
+    </div>
+    <div class="note">LSTF is the opposite of SSTF. MFU is the opposite of LFU. Both are rarely used in practice but common in exams to test understanding of extremes.</div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>Frames: 3
+Head: 50
+Requests (page cylinder):
+  1 82
+  2 170
+  3 43
+  4 140
+  5 24
+  -1 (stop)</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>LSTF Seek Sequence:
+  170 → 43 → 140 → 24 → 82
+Total Seek Time: 481
+
+MFU Page Replacement:
+  Step 1: Ref 2 → FAULT [ 2 - - ]
+  Step 2: Ref 4 → FAULT [ 2 4 - ]
+  ...
+Faults: 4 | Hits: 1
+Hit Ratio: 20.00%</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q1_lstf_mfu.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q1: LSTF (Largest Seek Time First) Disk Scheduling
+ *     + MFU (Most Frequently Used) Page Replacement
+ *
+ * Flow:
+ *   1. Read (page_number, cylinder) pairs
+ *   2. Sort by |cylinder - head| descending → LSTF order
+ *   3. Use the LSTF visit order as the page reference string
+ *   4. Run MFU page replacement on that string
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_REQ 100
+
+/* ── data structures ─────────────────────────────── */
+typedef struct {
+    int page;       /* logical page number          */
+    int cylinder;   /* physical cylinder position   */
+    int seek_dist;  /* |cylinder - current_head|    */
+} Request;
+
+typedef struct {
+    int page;
+    int freq;       /* access frequency             */
+    int last_used;  /* timestamp of last use        */
+} Frame;
+
+/* ── helpers ─────────────────────────────────────── */
+
+/* Compare for descending seek distance (LSTF) */
+int cmp_lstf(const void *a, const void *b) {
+    return ((Request *)b)-&gt;seek_dist - ((Request *)a)-&gt;seek_dist;
+}
+
+/* Print current frame state */
+void print_frames(Frame *frames, int nframes) {
+    printf(&quot;  Frames: [ &quot;);
+    for (int i = 0; i &lt; nframes; i++) {
+        if (frames[i].page == -1) printf(&quot;- &quot;);
+        else printf(&quot;%d &quot;, frames[i].page);
+    }
+    printf(&quot;]&quot;);
+}
+
+/* ── LSTF Disk Scheduling ────────────────────────── */
+int lstf(Request *reqs, int n, int head, int *seek_seq) {
+    /* compute seek distances from initial head */
+    for (int i = 0; i &lt; n; i++)
+        reqs[i].seek_dist = abs(reqs[i].cylinder - head);
+
+    /* sort descending by seek distance */
+    qsort(reqs, n, sizeof(Request), cmp_lstf);
+
+    int total = 0, cur = head;
+    printf(&quot;\n=== LSTF Disk Scheduling ===\n&quot;);
+    printf(&quot;%-6s %-10s %-10s %-12s\n&quot;,
+           &quot;Step&quot;, &quot;Page&quot;, &quot;Cylinder&quot;, &quot;Seek Dist&quot;);
+    printf(&quot;--------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++) {
+        int dist = abs(reqs[i].cylinder - cur);
+        total += dist;
+        seek_seq[i] = reqs[i].page;   /* page reference string */
+        printf(&quot;%-6d %-10d %-10d %-12d\n&quot;,
+               i + 1, reqs[i].page, reqs[i].cylinder, dist);
+        cur = reqs[i].cylinder;
+    }
+    printf(&quot;--------------------------------------\n&quot;);
+    printf(&quot;Total Seek Time: %d\n\n&quot;, total);
+    return total;
+}
+
+/* ── MFU Page Replacement ────────────────────────── */
+void mfu(int *ref_str, int n, int nframes) {
+    Frame frames[MAX_REQ];
+    for (int i = 0; i &lt; nframes; i++) { frames[i].page = -1; frames[i].freq = 0; frames[i].last_used = -1; }
+
+    int faults = 0, hits = 0, loaded = 0, time = 0;
+
+    printf(&quot;=== MFU Page Replacement ===\n&quot;);
+    printf(&quot;Frames=%d | Reference String Length=%d\n\n&quot;, nframes, n);
+    printf(&quot;%-6s %-8s %-8s %-8s&quot;, &quot;Step&quot;, &quot;Ref&quot;, &quot;Hit/F&quot;, &quot;Evicted&quot;);
+    print_frames(frames, nframes); printf(&quot;\n&quot;);
+    printf(&quot;----------------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++, time++) {
+        int page = ref_str[i];
+        int found = 0, free_slot = -1, evict = -1;
+
+        /* check hit */
+        for (int j = 0; j &lt; nframes; j++) {
+            if (frames[j].page == page) {
+                frames[j].freq++;
+                frames[j].last_used = time;
+                found = 1; hits++;
+                break;
+            }
+        }
+
+        if (!found) {
+            faults++;
+            /* find free slot */
+            for (int j = 0; j &lt; nframes; j++)
+                if (frames[j].page == -1) { free_slot = j; break; }
+
+            if (free_slot != -1) {
+                /* load into empty frame */
+                frames[free_slot].page = page;
+                frames[free_slot].freq = 1;
+                frames[free_slot].last_used = time;
+                evict = -1;
+            } else {
+                /* MFU: evict frame with HIGHEST frequency
+                   tie-break: least recently used */
+                int max_freq = -1, lru_time = time + 1;
+                for (int j = 0; j &lt; nframes; j++) {
+                    if (frames[j].freq &gt; max_freq ||
+                       (frames[j].freq == max_freq &amp;&amp; frames[j].last_used &lt; lru_time)) {
+                        max_freq = frames[j].freq;
+                        lru_time = frames[j].last_used;
+                        evict = j;
+                    }
+                }
+                int evicted_page = frames[evict].page;
+                frames[evict].page = page;
+                frames[evict].freq = 1;
+                frames[evict].last_used = time;
+                printf(&quot;%-6d %-8d %-8s %-8d&quot;,
+                       i + 1, page, &quot;FAULT&quot;, evicted_page);
+                print_frames(frames, nframes); printf(&quot;\n&quot;);
+                continue;
+            }
+        }
+
+        printf(&quot;%-6d %-8d %-8s %-8s&quot;,
+               i + 1, page, found ? &quot;HIT&quot; : &quot;FAULT&quot;, &quot;-&quot;);
+        print_frames(frames, nframes); printf(&quot;\n&quot;);
+    }
+
+    printf(&quot;----------------------------------------------------\n&quot;);
+    printf(&quot;Total Page Faults : %d\n&quot;, faults);
+    printf(&quot;Total Page Hits   : %d\n&quot;, hits);
+    printf(&quot;Hit Ratio         : %.2f%%\n&quot;, (float)hits / n * 100);
+}
+
+/* ── main ────────────────────────────────────────── */
+int main(void) {
+    int nframes, head;
+    Request reqs[MAX_REQ];
+    int n = 0;
+
+    printf(&quot;=== Q1: LSTF + MFU ===\n\n&quot;);
+    printf(&quot;Enter number of frames: &quot;); scanf(&quot;%d&quot;, &amp;nframes);
+    printf(&quot;Enter initial head position: &quot;); scanf(&quot;%d&quot;, &amp;head);
+    printf(&quot;Enter (page cylinder) pairs, -1 to stop:\n&quot;);
+
+    while (1) {
+        int pg, cyl;
+        scanf(&quot;%d&quot;, &amp;pg);
+        if (pg == -1) break;
+        scanf(&quot;%d&quot;, &amp;cyl);
+        reqs[n].page = pg;
+        reqs[n].cylinder = cyl;
+        n++;
+    }
+
+    int seek_seq[MAX_REQ];
+    lstf(reqs, n, head, seek_seq);
+    mfu(seek_seq, n, nframes);
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q2 -->
+<div class="qcard" id="q2">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q2</span>
+      LCFS Disk Scheduling + LFU Page Replacement
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      <strong>LCFS (Last Come First Serve)</strong> processes disk requests in reverse arrival order
+      — like a stack (LIFO). <strong>LFU (Least Frequently Used)</strong> page replacement evicts the
+      page with the lowest access frequency; ties broken by LRU time.
+    </div>
+    <div class="note">LCFS is also called "LIFO Disk Scheduling". The most recently arrived request is serviced first — it can starve older requests.</div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>Frames: 3
+Head: 100
+Requests (page cylinder):
+  1 50
+  2 30
+  3 90
+  4 150
+  5 10
+  -1</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>LCFS (reverse arrival):
+  10 → 150 → 90 → 30 → 50
+Total Seek Time: 420
+
+LFU Simulation:
+  Each fault → load page
+  Evict lowest freq on fault
+  Hit updates frequency</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q2_lcfs_lfu.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q2: LCFS (Last Come First Serve) Disk Scheduling
+ *     + LFU (Least Frequently Used) Page Replacement
+ *
+ * LCFS = process requests in REVERSE arrival order
+ *        (stack / LIFO discipline)
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+#define MAX_REQ 100
+
+/* ── data structures ─────────────────────────────── */
+typedef struct {
+    int page;
+    int cylinder;
+} Request;
+
+typedef struct {
+    int page;
+    int freq;
+    int last_used;
+} Frame;
+
+/* ── LCFS Disk Scheduling ────────────────────────── */
+int lcfs(Request *reqs, int n, int head, int *seek_seq) {
+    int total = 0, cur = head;
+
+    printf(&quot;\n=== LCFS Disk Scheduling ===\n&quot;);
+    printf(&quot;Arrival order reversed (LIFO / stack)\n\n&quot;);
+    printf(&quot;%-6s %-10s %-10s %-12s\n&quot;,
+           &quot;Step&quot;, &quot;Page&quot;, &quot;Cylinder&quot;, &quot;Seek Dist&quot;);
+    printf(&quot;--------------------------------------\n&quot;);
+
+    /* process in reverse arrival order */
+    for (int i = n - 1; i &gt;= 0; i--) {
+        int dist = abs(reqs[i].cylinder - cur);
+        total += dist;
+        seek_seq[n - 1 - i] = reqs[i].page;
+        printf(&quot;%-6d %-10d %-10d %-12d\n&quot;,
+               n - i, reqs[i].page, reqs[i].cylinder, dist);
+        cur = reqs[i].cylinder;
+    }
+    printf(&quot;--------------------------------------\n&quot;);
+    printf(&quot;Total Seek Time: %d\n\n&quot;, total);
+    return total;
+}
+
+/* ── LFU Page Replacement ────────────────────────── */
+void print_frames_lfu(Frame *frames, int nf) {
+    printf(&quot;  [ &quot;);
+    for (int i = 0; i &lt; nf; i++) {
+        if (frames[i].page == -1) printf(&quot;- &quot;);
+        else printf(&quot;%d(f%d) &quot;, frames[i].page, frames[i].freq);
+    }
+    printf(&quot;]&quot;);
+}
+
+void lfu(int *ref_str, int n, int nframes) {
+    Frame frames[MAX_REQ];
+    for (int i = 0; i &lt; nframes; i++) {
+        frames[i].page = -1; frames[i].freq = 0; frames[i].last_used = -1;
+    }
+
+    int faults = 0, hits = 0, time = 0;
+
+    printf(&quot;=== LFU Page Replacement ===\n&quot;);
+    printf(&quot;Frames=%d  (format: page(freq))\n\n&quot;, nframes);
+    printf(&quot;%-6s %-6s %-8s %-8s  Frames\n&quot;, &quot;Step&quot;, &quot;Ref&quot;, &quot;Hit/F&quot;, &quot;Evicted&quot;);
+    printf(&quot;----------------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++, time++) {
+        int page = ref_str[i];
+        int found = 0, free_slot = -1, evict = -1;
+
+        for (int j = 0; j &lt; nframes; j++) {
+            if (frames[j].page == page) {
+                frames[j].freq++;
+                frames[j].last_used = time;
+                found = 1; hits++;
+                break;
+            }
+        }
+
+        if (!found) {
+            faults++;
+            for (int j = 0; j &lt; nframes; j++)
+                if (frames[j].page == -1) { free_slot = j; break; }
+
+            if (free_slot != -1) {
+                frames[free_slot].page = page;
+                frames[free_slot].freq = 1;
+                frames[free_slot].last_used = time;
+                printf(&quot;%-6d %-6d %-8s %-8s&quot;, i+1, page, &quot;FAULT&quot;, &quot;-&quot;);
+            } else {
+                /* LFU: evict page with LOWEST frequency; tie → LRU */
+                int min_freq = 1&lt;&lt;30, lru_t = time+1;
+                for (int j = 0; j &lt; nframes; j++) {
+                    if (frames[j].freq &lt; min_freq ||
+                       (frames[j].freq == min_freq &amp;&amp; frames[j].last_used &lt; lru_t)) {
+                        min_freq = frames[j].freq;
+                        lru_t    = frames[j].last_used;
+                        evict    = j;
+                    }
+                }
+                int ep = frames[evict].page;
+                frames[evict].page = page;
+                frames[evict].freq = 1;
+                frames[evict].last_used = time;
+                printf(&quot;%-6d %-6d %-8s %-8d&quot;, i+1, page, &quot;FAULT&quot;, ep);
+            }
+        } else {
+            printf(&quot;%-6d %-6d %-8s %-8s&quot;, i+1, page, &quot;HIT&quot;, &quot;-&quot;);
+        }
+        print_frames_lfu(frames, nframes); printf(&quot;\n&quot;);
+    }
+
+    printf(&quot;----------------------------------------------------\n&quot;);
+    printf(&quot;Faults: %d | Hits: %d | Hit Ratio: %.2f%%\n&quot;,
+           faults, hits, (float)hits/n*100);
+}
+
+/* ── main ────────────────────────────────────────── */
+int main(void) {
+    int nframes, head;
+    Request reqs[MAX_REQ];
+    int n = 0;
+
+    printf(&quot;=== Q2: LCFS + LFU ===\n\n&quot;);
+    printf(&quot;Enter number of frames: &quot;); scanf(&quot;%d&quot;, &amp;nframes);
+    printf(&quot;Enter initial head position: &quot;); scanf(&quot;%d&quot;, &amp;head);
+    printf(&quot;Enter (page cylinder) pairs, -1 to stop:\n&quot;);
+
+    while (1) {
+        int pg; scanf(&quot;%d&quot;, &amp;pg);
+        if (pg == -1) break;
+        int cyl; scanf(&quot;%d&quot;, &amp;cyl);
+        reqs[n].page = pg; reqs[n].cylinder = cyl; n++;
+    }
+
+    int seek_seq[MAX_REQ];
+    lcfs(reqs, n, head, seek_seq);
+    lfu(seek_seq, n, nframes);
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q3 -->
+<div class="qcard" id="q3">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q3</span>
+      Logical Address Translation (Page Number + Offset)
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      Given a <strong>page size</strong> (must be power of 2), decompose each logical address into:
+      <strong>page number</strong> and <strong>offset</strong>.
+    </div>
+    <div class="formula">
+      page_number = logical_address / page_size<br>
+      offset      = logical_address % page_size<br><br>
+      ── bit-shift equivalent ──<br>
+      page_number = logical_address &gt;&gt; offset_bits<br>
+      offset      = logical_address &amp; (page_size - 1)
+    </div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>Addresses: 3
+Page size: 512
+Logical addresses:
+  1280
+  1536
+  2050</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>| Index | Logical | Page | Offset |
+|   0   |   1280  |   2  |  256   |
+|   1   |   1536  |   3  |    0   |
+|   2   |   2050  |   4  |    2   |</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q3_logical_addr.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q3: Logical Address Translation
+ *
+ * Given a page size (must be power of 2), decompose each
+ * logical address into:
+ *   page_number = logical_address / page_size
+ *   offset      = logical_address % page_size
+ *
+ * Also shows the equivalent bit-shift interpretation.
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+
+#define MAX_ADDR 100
+
+int main(void) {
+    int n, page_size;
+
+    printf(&quot;=== Q3: Logical Address Translation ===\n\n&quot;);
+    printf(&quot;Enter number of logical addresses: &quot;); scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter page size (bytes):           &quot;); scanf(&quot;%d&quot;, &amp;page_size);
+
+    /* Determine offset bits for display */
+    int offset_bits = 0, tmp = page_size;
+    while (tmp &gt; 1) { offset_bits++; tmp &gt;&gt;= 1; }
+
+    int addrs[MAX_ADDR];
+    printf(&quot;Enter %d logical addresses:\n&quot;, n);
+    for (int i = 0; i &lt; n; i++) {
+        printf(&quot;  Address[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;addrs[i]);
+    }
+
+    /* ── output table ─────────────────────────────── */
+    printf(&quot;\nPage Size     : %d bytes\n&quot;, page_size);
+    printf(&quot;Offset Bits   : %d\n\n&quot;, offset_bits);
+
+    printf(&quot;+-------+------------------+-------------+----------+\n&quot;);
+    printf(&quot;| Index | Logical Address  | Page Number |  Offset  |\n&quot;);
+    printf(&quot;+-------+------------------+-------------+----------+\n&quot;);
+
+    for (int i = 0; i &lt; n; i++) {
+        int la   = addrs[i];
+        int pn   = la / page_size;
+        int off  = la % page_size;
+        printf(&quot;|  %3d  |  %14d  |  %9d  |  %6d  |\n&quot;, i, la, pn, off);
+    }
+    printf(&quot;+-------+------------------+-------------+----------+\n&quot;);
+
+    /* ── bit-level breakdown ──────────────────────── */
+    printf(&quot;\nBit-level breakdown (using &gt;&gt; and &amp; operators):\n&quot;);
+    printf(&quot;  page_number = logical_address &gt;&gt; %d\n&quot;, offset_bits);
+    printf(&quot;  offset      = logical_address &amp;  0x%X  (mask=%d bits)\n&quot;,
+           page_size - 1, offset_bits);
+
+    for (int i = 0; i &lt; n; i++) {
+        int la  = addrs[i];
+        int pn  = la &gt;&gt; offset_bits;
+        int off = la &amp; (page_size - 1);
+        printf(&quot;  [%d] Addr=%d  → Page=%d  Offset=%d\n&quot;, i, la, pn, off);
+    }
+
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q4 -->
+<div class="qcard" id="q4">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q4</span>
+      MRU Page Replacement using 8-bit Reference Registers
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      Each frame has an <strong>8-bit shift register</strong>. On every memory reference:
+      <ol style="margin:0.5rem 0 0.5rem 1.2rem;">
+        <li>Shift ALL frame registers <strong>right by 1 bit</strong></li>
+        <li>Set <strong>MSB = 1</strong> for the referenced page's frame</li>
+      </ol>
+      The frame with the <strong>maximum register value</strong> is the MRU (Most Recently Used) page —
+      evict it on a page fault.
+    </div>
+    <div class="formula">
+      Register after reference = 10000000 (binary) = 0x80<br>
+      Register after 1 miss    = 01000000<br>
+      Register after 2 misses  = 00100000<br>
+      Higher value = more recently referenced = MRU victim
+    </div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>Frames: 3
+References: 5
+String: 1 2 3 2 1</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>Step 1 | Ref:1 | FAULT
+  Frames: [1 - -]
+  Regs: [10000000 00000000 00000000]
+
+Step 2 | Ref:2 | FAULT
+  Frames: [1 2 -]
+  Regs: [01000000 10000000 00000000]
+
+Step 4 | Ref:2 | HIT
+  ...Evict page with max reg...</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q4_mru_registers.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q4: MRU Page Replacement using 8-bit Reference Registers
+ *
+ * Each frame maintains an 8-bit shift register.
+ * On every memory reference:
+ *   1. Shift ALL frame registers RIGHT by 1.
+ *   2. Set MSB (bit 7) = 1 for the referenced page.
+ *
+ * Replacement: evict the frame with the MAXIMUM register value
+ * (i.e., the Most Recently Used page).
+ * Tie-break: first frame found with max value.
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_FRAMES  10
+#define MAX_REF    100
+
+/* ── helpers ─────────────────────────────────────── */
+
+/* Print 8-bit value as binary string */
+void to_binary8(unsigned char val, char *buf) {
+    for (int i = 7; i &gt;= 0; i--)
+        buf[7 - i] = ((val &gt;&gt; i) &amp; 1) ? &#x27;1&#x27; : &#x27;0&#x27;;
+    buf[8] = &#x27;\0&#x27;;
+}
+
+/* Find page in frames; return index or -1 */
+int find_page(int *frames, int nf, int page) {
+    for (int i = 0; i &lt; nf; i++)
+        if (frames[i] == page) return i;
+    return -1;
+}
+
+/* Find frame with MAXIMUM register (MRU victim) */
+int find_mru_victim(unsigned char *regs, int nf) {
+    int victim = 0;
+    for (int i = 1; i &lt; nf; i++)
+        if (regs[i] &gt; regs[victim]) victim = i;
+    return victim;
+}
+
+/* Find free frame (-1 if none) */
+int find_free(int *frames, int nf) {
+    for (int i = 0; i &lt; nf; i++)
+        if (frames[i] == -1) return i;
+    return -1;
+}
+
+/* Print current frame &amp; register state */
+void print_state(int *frames, unsigned char *regs, int nf) {
+    char buf[9];
+    printf(&quot;  Frames : [ &quot;);
+    for (int i = 0; i &lt; nf; i++) {
+        if (frames[i] == -1) printf(&quot;- &quot;); else printf(&quot;%d &quot;, frames[i]);
+    }
+    printf(&quot;]\n&quot;);
+    printf(&quot;  Regs   : [ &quot;);
+    for (int i = 0; i &lt; nf; i++) {
+        to_binary8(regs[i], buf);
+        printf(&quot;%s &quot;, buf);
+    }
+    printf(&quot;]\n&quot;);
+}
+
+/* ── MRU simulation ──────────────────────────────── */
+void mru_simulate(int *ref_str, int n, int nframes) {
+    int frames[MAX_FRAMES];
+    unsigned char regs[MAX_FRAMES];
+
+    memset(frames, -1, sizeof(frames));
+    memset(regs,    0, sizeof(regs));
+
+    int faults = 0, hits = 0;
+
+    printf(&quot;\n=== MRU Page Replacement (8-bit Registers) ===\n&quot;);
+    printf(&quot;Frames = %d\n\n&quot;, nframes);
+
+    for (int step = 0; step &lt; n; step++) {
+        int page = ref_str[step];
+        printf(&quot;Step %2d | Ref: %d\n&quot;, step + 1, page);
+
+        /* Step 1: shift ALL registers right by 1 */
+        for (int i = 0; i &lt; nframes; i++) regs[i] &gt;&gt;= 1;
+
+        int idx = find_page(frames, nframes, page);
+
+        if (idx != -1) {
+            /* HIT: set MSB of referenced frame */
+            regs[idx] |= 0x80;
+            hits++;
+            printf(&quot;  Result : HIT  (frame %d)\n&quot;, idx);
+        } else {
+            faults++;
+            int free_slot = find_free(frames, nframes);
+
+            if (free_slot != -1) {
+                /* Load into empty frame */
+                frames[free_slot] = page;
+                regs[free_slot]   = 0x80;     /* MSB = 1 */
+                printf(&quot;  Result : PAGE FAULT (loaded into frame %d)\n&quot;, free_slot);
+            } else {
+                /* MRU eviction */
+                int victim = find_mru_victim(regs, nframes);
+                printf(&quot;  Result : PAGE FAULT (evict page %d from frame %d)\n&quot;,
+                       frames[victim], victim);
+                frames[victim] = page;
+                regs[victim]   = 0x80;
+            }
+        }
+
+        print_state(frames, regs, nframes);
+        printf(&quot;\n&quot;);
+    }
+
+    printf(&quot;=== Summary ===\n&quot;);
+    printf(&quot;Total Steps  : %d\n&quot;, n);
+    printf(&quot;Total Hits   : %d\n&quot;, hits);
+    printf(&quot;Total Faults : %d\n&quot;, faults);
+    printf(&quot;Hit Ratio    : %.2f%%\n&quot;, (float)hits / n * 100);
+}
+
+/* ── main ────────────────────────────────────────── */
+int main(void) {
+    int nframes, n;
+    int ref_str[MAX_REF];
+
+    printf(&quot;=== Q4: MRU with 8-bit Reference Registers ===\n\n&quot;);
+    printf(&quot;Enter number of frames (max %d): &quot;, MAX_FRAMES);
+    scanf(&quot;%d&quot;, &amp;nframes);
+
+    printf(&quot;Enter number of references: &quot;);
+    scanf(&quot;%d&quot;, &amp;n);
+
+    printf(&quot;Enter reference string:\n&quot;);
+    for (int i = 0; i &lt; n; i++) {
+        printf(&quot;  Ref[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;ref_str[i]);
+    }
+
+    mru_simulate(ref_str, n, nframes);
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q5 -->
+<div class="qcard" id="q5">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q5</span>
+      Memory Allocation (Best Fit) + Banker's Safety Check
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      For each allocation request: find the <strong>Best Fit</strong> memory block (smallest block ≥ request),
+      perform the allocation, then run the <strong>Banker's Safety Algorithm</strong> to verify the system
+      remains in a safe state. Print the safe sequence if safe, or warn of unsafe state.
+    </div>
+    <div class="formula">
+      Best Fit: find min(block.size) where block.size &gt;= request<br>
+      Safety: Work = Available<br>
+      &nbsp;&nbsp;For each unfinished process P where Need[P] &lt;= Work:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Work += Allocation[P]; mark P finished<br>
+      &nbsp;&nbsp;Repeat until no progress. Safe iff all finished.
+    </div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>Processes: 3, Blocks: 4
+Blocks: 100 500 200 300
+Max: P0=200, P1=400, P2=150
+Requests:
+  P0 150
+  P1 350
+  -1</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>Request: P0 needs 150
+  Before: B0(100) B1(500) B2(200) B3(300)
+  Best Fit: B2(200) → P0
+  After: B2 has 50 remaining
+  Safety: SAFE ✓
+  Sequence: P0 → P2 → P1</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q5_bestfit_banker.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q5: Memory Allocation — Best Fit + Banker&#x27;s Safety Check
+ *
+ * For each allocation request:
+ *   1. Display memory blocks (sorted ascending for best-fit scan)
+ *   2. Apply Best Fit: smallest block that fits
+ *   3. Display memory after allocation
+ *   4. Run simplified Banker&#x27;s safety check
+ *   5. Print safe sequence if safe, &quot;UNSAFE&quot; otherwise
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_PROC   20
+#define MAX_BLOCKS 20
+
+/* ── memory block structure ──────────────────────── */
+typedef struct {
+    int id;         /* original block index */
+    int size;       /* current free size     */
+    int allocated_to; /* -1 = free            */
+} Block;
+
+/* ── Banker&#x27;s safety check ───────────────────────── */
+/*
+ * Simplified: one resource type.
+ * allocation[i] = currently allocated to process i
+ * max_need[i]   = maximum need of process i
+ * available     = total free memory
+ */
+int is_safe(int *allocation, int *max_need, int np, int available,
+            int *safe_seq, int *seq_len) {
+    int need[MAX_PROC], finish[MAX_PROC];
+    for (int i = 0; i &lt; np; i++) {
+        need[i]   = max_need[i] - allocation[i];
+        finish[i] = 0;
+    }
+
+    int work = available, count = 0;
+    *seq_len = 0;
+
+    while (count &lt; np) {
+        int found = 0;
+        for (int i = 0; i &lt; np; i++) {
+            if (!finish[i] &amp;&amp; need[i] &lt;= work) {
+                work += allocation[i];
+                finish[i] = 1;
+                safe_seq[(*seq_len)++] = i;
+                found = 1;
+                count++;
+            }
+        }
+        if (!found) return 0;   /* unsafe */
+    }
+    return 1;   /* safe */
+}
+
+/* ── print memory blocks ─────────────────────────── */
+void print_blocks(Block *blocks, int nb) {
+    printf(&quot;  +-------+----------+------------------+\n&quot;);
+    printf(&quot;  | Block |  Size    |  Status          |\n&quot;);
+    printf(&quot;  +-------+----------+------------------+\n&quot;);
+    for (int i = 0; i &lt; nb; i++) {
+        if (blocks[i].allocated_to == -1)
+            printf(&quot;  |  B%-2d  |  %5d   |  FREE            |\n&quot;,
+                   blocks[i].id, blocks[i].size);
+        else
+            printf(&quot;  |  B%-2d  |  %5d   |  P%-2d (alloc&#x27;d)  |\n&quot;,
+                   blocks[i].id, blocks[i].size, blocks[i].allocated_to);
+    }
+    printf(&quot;  +-------+----------+------------------+\n&quot;);
+}
+
+/* ── Best Fit allocation ─────────────────────────── */
+int best_fit_alloc(Block *blocks, int nb, int pid, int req_size) {
+    int best = -1;
+    for (int i = 0; i &lt; nb; i++) {
+        if (blocks[i].allocated_to == -1 &amp;&amp; blocks[i].size &gt;= req_size) {
+            if (best == -1 || blocks[i].size &lt; blocks[best].size)
+                best = i;
+        }
+    }
+    if (best != -1) {
+        /* Split block if leftover &gt; 0 (optional; keep simple: mark used) */
+        blocks[best].allocated_to = pid;
+        blocks[best].size        -= req_size;   /* remaining fragment */
+    }
+    return best;   /* -1 = not allocated */
+}
+
+/* ── main ────────────────────────────────────────── */
+int main(void) {
+    int np, nb;
+
+    printf(&quot;=== Q5: Best Fit Memory Allocation + Safety Check ===\n\n&quot;);
+    printf(&quot;Enter number of processes: &quot;); scanf(&quot;%d&quot;, &amp;np);
+    printf(&quot;Enter number of memory blocks: &quot;); scanf(&quot;%d&quot;, &amp;nb);
+
+    Block blocks[MAX_BLOCKS];
+    printf(&quot;Enter block sizes:\n&quot;);
+    for (int i = 0; i &lt; nb; i++) {
+        printf(&quot;  Block[%d] size: &quot;, i); scanf(&quot;%d&quot;, &amp;blocks[i].size);
+        blocks[i].id = i; blocks[i].allocated_to = -1;
+    }
+
+    int max_need[MAX_PROC], allocation[MAX_PROC];
+    printf(&quot;Enter max memory requirement for each process:\n&quot;);
+    for (int i = 0; i &lt; np; i++) {
+        printf(&quot;  P%d max: &quot;, i); scanf(&quot;%d&quot;, &amp;max_need[i]);
+        allocation[i] = 0;
+    }
+
+    /* total available = sum of all free blocks */
+    int total_mem = 0;
+    for (int i = 0; i &lt; nb; i++) total_mem += blocks[i].size;
+    int available = total_mem;
+
+    printf(&quot;\nInitial Memory Blocks:\n&quot;);
+    print_blocks(blocks, nb);
+
+    printf(&quot;\nEnter allocation requests as (pid size), enter -1 to stop:\n&quot;);
+    int step = 1;
+
+    while (1) {
+        int pid; scanf(&quot;%d&quot;, &amp;pid);
+        if (pid == -1) break;
+        int req; scanf(&quot;%d&quot;, &amp;req);
+
+        printf(&quot;\n--- Request %d: P%d wants %d units ---\n&quot;, step++, pid, req);
+        printf(&quot;Memory BEFORE allocation:\n&quot;);
+        print_blocks(blocks, nb);
+
+        int slot = best_fit_alloc(blocks, nb, pid, req);
+
+        if (slot == -1) {
+            printf(&quot;  [!] Cannot allocate %d units to P%d — no suitable block\n&quot;, req, pid);
+        } else {
+            allocation[pid] += req;
+            available       -= req;
+            printf(&quot;Memory AFTER allocation (allocated to block B%d):\n&quot;,
+                   blocks[slot].id);
+            print_blocks(blocks, nb);
+        }
+
+        /* Safety check */
+        int safe_seq[MAX_PROC], seq_len = 0;
+        if (is_safe(allocation, max_need, np, available, safe_seq, &amp;seq_len)) {
+            printf(&quot;  Safety Status: SAFE ✓\n&quot;);
+            printf(&quot;  Safe Sequence: &quot;);
+            for (int i = 0; i &lt; seq_len; i++) printf(&quot;P%d%s&quot;, safe_seq[i], i&lt;seq_len-1?&quot; → &quot;:&quot;&quot;);
+            printf(&quot;\n&quot;);
+        } else {
+            printf(&quot;  Safety Status: UNSAFE ✗ — Deadlock may occur!\n&quot;);
+        }
+    }
+
+    /* Final allocation table */
+    printf(&quot;\n=== Final Allocation Table ===\n&quot;);
+    printf(&quot;%-10s %-12s %-12s %-10s\n&quot;, &quot;Process&quot;, &quot;Allocated&quot;, &quot;Max Need&quot;, &quot;Need Left&quot;);
+    printf(&quot;--------------------------------------------------\n&quot;);
+    for (int i = 0; i &lt; np; i++)
+        printf(&quot;  P%-7d %-12d %-12d %-10d\n&quot;,
+               i, allocation[i], max_need[i], max_need[i] - allocation[i]);
+    printf(&quot;\nFree memory: %d units\n&quot;, available);
+
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q6 -->
+<div class="qcard" id="q6">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q6</span>
+      Optimal Page Replacement (Bélády's Algorithm)
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      <strong>Optimal (OPT)</strong> gives the theoretical minimum number of page faults.
+      On a fault, evict the page whose <em>next use is farthest in the future</em>
+      (or never used again = best victim). Requires knowing the future reference string — impossible
+      in real OS, but used as a benchmark.
+    </div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>Frames: 3
+References: 12
+String: 7 0 1 2 0 3 0 4 2 3 0 3</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>Step  Ref  Hit/F   Evicted  Frames
+1     7    FAULT   -        [7 - -]
+2     0    FAULT   -        [7 0 -]
+3     1    FAULT   -        [7 0 1]
+4     2    FAULT   7        [2 0 1]
+5     0    HIT     -        [2 0 1]
+...
+Total Faults: 6 | Hits: 6
+Hit Ratio: 50.00%</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q6_optimal.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q6: Optimal Page Replacement (Bélády&#x27;s Algorithm)
+ *
+ * Replacement policy: evict the page that will NOT be used
+ * for the LONGEST time in the future.
+ * If a page is never used again, it is the best victim.
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_FRAMES 10
+#define MAX_REF   100
+
+/* ── helpers ─────────────────────────────────────── */
+
+int find_page(int *frames, int nf, int page) {
+    for (int i = 0; i &lt; nf; i++) if (frames[i] == page) return i;
+    return -1;
+}
+
+int find_free(int *frames, int nf) {
+    for (int i = 0; i &lt; nf; i++) if (frames[i] == -1) return i;
+    return -1;
+}
+
+/* Find optimal victim: page used FARTHEST in future (or never) */
+int find_optimal_victim(int *frames, int nf, int *ref_str, int n, int cur) {
+    int farthest = -1, victim = -1;
+
+    for (int i = 0; i &lt; nf; i++) {
+        int next_use = n;   /* assume never used = n (beyond end) */
+        for (int j = cur + 1; j &lt; n; j++) {
+            if (ref_str[j] == frames[i]) { next_use = j; break; }
+        }
+        if (next_use &gt; farthest) { farthest = next_use; victim = i; }
+    }
+    return victim;
+}
+
+void print_frames(int *frames, int nf) {
+    printf(&quot;[ &quot;);
+    for (int i = 0; i &lt; nf; i++) {
+        if (frames[i] == -1) printf(&quot;- &quot;); else printf(&quot;%d &quot;, frames[i]);
+    }
+    printf(&quot;]&quot;);
+}
+
+/* ── Optimal simulation ──────────────────────────── */
+void optimal(int *ref_str, int n, int nframes) {
+    int frames[MAX_FRAMES];
+    for (int i = 0; i &lt; nframes; i++) frames[i] = -1;
+
+    int faults = 0, hits = 0;
+
+    printf(&quot;=== Optimal Page Replacement ===\n&quot;);
+    printf(&quot;Frames = %d | Ref String Length = %d\n\n&quot;, nframes, n);
+    printf(&quot;%-6s %-6s %-8s %-10s  Frames\n&quot;, &quot;Step&quot;, &quot;Ref&quot;, &quot;Hit/F&quot;, &quot;Evicted&quot;);
+    printf(&quot;-----------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++) {
+        int page = ref_str[i];
+        int idx  = find_page(frames, nframes, page);
+
+        if (idx != -1) {
+            hits++;
+            printf(&quot;%-6d %-6d %-8s %-10s  &quot;, i+1, page, &quot;HIT&quot;, &quot;-&quot;);
+        } else {
+            faults++;
+            int free_slot = find_free(frames, nframes);
+            if (free_slot != -1) {
+                frames[free_slot] = page;
+                printf(&quot;%-6d %-6d %-8s %-10s  &quot;, i+1, page, &quot;FAULT&quot;, &quot;-&quot;);
+            } else {
+                int victim = find_optimal_victim(frames, nframes, ref_str, n, i);
+                printf(&quot;%-6d %-6d %-8s %-10d  &quot;, i+1, page, &quot;FAULT&quot;, frames[victim]);
+                frames[victim] = page;
+            }
+        }
+        print_frames(frames, nframes);
+        printf(&quot;\n&quot;);
+    }
+
+    printf(&quot;-----------------------------------------------\n&quot;);
+    printf(&quot;Total Page Faults : %d\n&quot;, faults);
+    printf(&quot;Total Page Hits   : %d\n&quot;, hits);
+    printf(&quot;Hit Ratio         : %.2f%%\n&quot;, (float)hits / n * 100);
+    printf(&quot;Fault Ratio       : %.2f%%\n&quot;, (float)faults / n * 100);
+}
+
+/* ── main ────────────────────────────────────────── */
+int main(void) {
+    int nframes, n;
+    int ref_str[MAX_REF];
+
+    printf(&quot;=== Q6: Optimal Page Replacement ===\n\n&quot;);
+    printf(&quot;Enter number of frames: &quot;); scanf(&quot;%d&quot;, &amp;nframes);
+    printf(&quot;Enter number of references: &quot;); scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter reference string:\n&quot;);
+    for (int i = 0; i &lt; n; i++) {
+        printf(&quot;  Ref[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;ref_str[i]);
+    }
+
+    optimal(ref_str, n, nframes);
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q7 -->
+<div class="qcard" id="q7">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q7</span>
+      Effective Access Time (EAT) with TLB Hit Ratio
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="desc">
+      <strong>EAT</strong> measures the average time per memory access accounting for TLB hits and misses.
+      A TLB hit requires one memory access (after TLB lookup); a miss requires two (page table walk + data fetch).
+    </div>
+    <div class="formula">
+      EAT = α × (t_TLB + t_mem)  +  (1-α) × (t_TLB + 2×t_mem)<br><br>
+      Simplified: EAT = t_TLB + (2 - α) × t_mem<br><br>
+      Where: α = TLB hit ratio, t_TLB = TLB access time, t_mem = memory access time
+    </div>
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Sample Input</h4>
+        <pre>TLB access time: 10 ns
+Memory access time: 100 ns
+Hit ratio: 0.90</pre>
+      </div>
+      <div class="io-box">
+        <h4>Sample Output</h4>
+        <pre>EAT = 0.90 × (10 + 100)
+    + 0.10 × (10 + 200)
+    = 0.90 × 110 + 0.10 × 210
+    = 99 + 21
+    = 120 ns
+
+Sensitivity table for α = 0..1</pre>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q7_eat_tlb.c</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * Q7: Effective Access Time (EAT) Calculation
+ *
+ * Formulas:
+ *   EAT = α × (TLB_time + Mem_time)          ← TLB hit
+ *       + (1 - α) × (TLB_time + 2 × Mem_time) ← TLB miss (2 memory accesses)
+ *
+ *   Where α = TLB hit ratio (0.0 – 1.0)
+ *
+ * With TLB associative lookup time = t_tlb ns
+ * Memory access time               = t_mem ns
+ *
+ * Expanded:
+ *   EAT = α × (t_tlb + t_mem) + (1-α) × (t_tlb + 2×t_mem)
+ *       = t_tlb + t_mem + (1-α) × t_mem
+ *       = t_tlb + (2 - α) × t_mem
+ */
+
+#include &lt;stdio.h&gt;
+
+/* ── EAT calculation ─────────────────────────────── */
+double compute_eat(double tlb_time, double mem_time, double hit_ratio) {
+    double hit_path  = tlb_time + mem_time;           /* 1 memory access */
+    double miss_path = tlb_time + 2.0 * mem_time;     /* 2 memory accesses */
+    return hit_ratio * hit_path + (1.0 - hit_ratio) * miss_path;
+}
+
+/* ── print a horizontal rule ─────────────────────── */
+void hline(void) { printf(&quot;--------------------------------------------------\n&quot;); }
+
+int main(void) {
+    printf(&quot;=== Q7: Effective Access Time (EAT) ===\n\n&quot;);
+
+    /* ── single case ────────────────────────────── */
+    double tlb_time, mem_time, hit_ratio;
+
+    printf(&quot;Enter TLB access time (ns)  : &quot;); scanf(&quot;%lf&quot;, &amp;tlb_time);
+    printf(&quot;Enter Memory access time (ns): &quot;); scanf(&quot;%lf&quot;, &amp;mem_time);
+    printf(&quot;Enter TLB hit ratio (0–1)   : &quot;); scanf(&quot;%lf&quot;, &amp;hit_ratio);
+
+    double eat = compute_eat(tlb_time, mem_time, hit_ratio);
+
+    hline();
+    printf(&quot;FORMULA:\n&quot;);
+    printf(&quot;  EAT = α × (TLB + Mem) + (1-α) × (TLB + 2×Mem)\n\n&quot;);
+    printf(&quot;SUBSTITUTION:\n&quot;);
+    printf(&quot;  EAT = %.2f × (%.2f + %.2f)\n&quot;, hit_ratio, tlb_time, mem_time);
+    printf(&quot;      + %.2f × (%.2f + 2×%.2f)\n&quot;,
+           1.0 - hit_ratio, tlb_time, mem_time);
+    printf(&quot;  EAT = %.2f × %.2f + %.2f × %.2f\n&quot;,
+           hit_ratio,       tlb_time + mem_time,
+           1.0 - hit_ratio, tlb_time + 2.0 * mem_time);
+    printf(&quot;  EAT = %.4f ns\n\n&quot;, eat);
+    hline();
+
+    /* ── sensitivity table ──────────────────────── */
+    printf(&quot;\nSENSITIVITY TABLE (fixed TLB=%.0fns, Mem=%.0fns)\n&quot;,
+           tlb_time, mem_time);
+    printf(&quot;%-15s %-20s %-20s\n&quot;, &quot;Hit Ratio (α)&quot;, &quot;EAT (ns)&quot;, &quot;Speedup vs no-TLB&quot;);
+    hline();
+
+    double no_tlb_eat = 2.0 * mem_time;   /* without TLB, always 2 accesses */
+    double ratios[] = {0.0, 0.5, 0.7, 0.8, 0.9, 0.95, 0.99, 1.0};
+    int nr = sizeof(ratios) / sizeof(ratios[0]);
+
+    for (int i = 0; i &lt; nr; i++) {
+        double e = compute_eat(tlb_time, mem_time, ratios[i]);
+        printf(&quot;  %-13.2f %-20.4f %.2fx\n&quot;, ratios[i], e, no_tlb_eat / e);
+    }
+    hline();
+
+    /* ── multi-level paging note ────────────────── */
+    printf(&quot;\nNOTE — Multi-level Paging:\n&quot;);
+    printf(&quot;  For k-level page table:\n&quot;);
+    printf(&quot;    EAT (no TLB)  = (k+1) × Mem_time\n&quot;);
+    printf(&quot;    EAT (with TLB)= α × (TLB + Mem)\n&quot;);
+    printf(&quot;                  + (1-α) × (TLB + (k+1)×Mem)\n&quot;);
+
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PART 2 — ADDITIONAL QUESTIONS
+═════════════════════════════════════════ -->
+<h2 class="section-title" id="additional">
+  <span class="num">2</span> Additional Practice Questions
+</h2>
+
+<!-- Q8-14 block -->
+<div class="qcard" id="q8">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q8–Q14</span>
+      SSTF · SCAN · C-SCAN · FIFO · LRU · Second Chance · Banker's (Full)
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+
+    <div class="desc" id="q9">
+      This file contains 7 complete algorithms in a single menu-driven program.
+      Each can be run independently by choosing from the menu.
+    </div>
+
+    <table class="cmp">
+      <tr>
+        <th>Q#</th><th>Algorithm</th><th>Key Idea</th><th>Complexity</th>
+      </tr>
+      <tr><td>Q8</td><td>SSTF</td><td>Closest cylinder first. Can starve.</td><td>O(n²)</td></tr>
+      <tr><td id="q10">Q9</td><td>SCAN (Elevator)</td><td>Move in one direction, reverse at end.</td><td>O(n log n)</td></tr>
+      <tr><td id="q11">Q10</td><td>C-SCAN</td><td>One direction only, jump back to 0.</td><td>O(n log n)</td></tr>
+      <tr><td id="q12">Q11</td><td>FIFO PR</td><td>Evict oldest loaded page. Suffers Bélády anomaly.</td><td>O(n·f)</td></tr>
+      <tr><td id="q13">Q12</td><td>LRU PR</td><td>Evict least recently used. No Bélády anomaly.</td><td>O(n·f)</td></tr>
+      <tr><td id="q14">Q13</td><td>Second Chance</td><td>FIFO + reference bit. Give each page one extra chance.</td><td>O(n·f)</td></tr>
+      <tr><td>Q14</td><td>Banker's Full</td><td>Multi-resource safety + resource request algorithm.</td><td>O(n²·r)</td></tr>
+    </table>
+
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>SSTF — Sample (Q8)</h4>
+        <pre>Head: 50
+Requests: 82 170 43 140 24 16 190
+Order: 43→24→16→82→140→170→190
+Total Seek: 208</pre>
+      </div>
+      <div class="io-box">
+        <h4>Banker's — Sample (Q14)</h4>
+        <pre>5 processes, 3 resources (A,B,C)
+Alloc: P0(0,1,0) P1(2,0,0)...
+Max:   P0(7,5,3) P1(3,2,2)...
+Avail: 3 3 2
+Safe Sequence: P1→P3→P4→P0→P2</pre>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q8_to_q14_additional.c — Menu-driven (7 algorithms)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * ADDITIONAL QUESTIONS — OS Lab Practice
+ *
+ * Q8  : SSTF Disk Scheduling
+ * Q9  : SCAN Disk Scheduling
+ * Q10 : C-SCAN Disk Scheduling
+ * Q11 : FIFO Page Replacement
+ * Q12 : LRU Page Replacement
+ * Q13 : Second Chance (Clock) Page Replacement
+ * Q14 : Banker&#x27;s Algorithm (full: multi-resource)
+ *
+ * Each question is a self-contained function + demo main().
+ * Compile individually or together.
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;math.h&gt;
+
+#define MAX_REQ    100
+#define MAX_FRAMES  10
+#define MAX_PROC    10
+#define MAX_RES     10
+
+/* ================================================================
+ * Q8: SSTF — Shortest Seek Time First
+ * ================================================================
+ * Always service the cylinder closest to current head.
+ * Can cause starvation for far cylinders.
+ *
+ * Sample Input:
+ *   Head: 50
+ *   Requests: 82 170 43 140 24 16 190
+ * Sample Output:
+ *   Seek sequence: 43 24 16 82 140 170 190
+ *   Total seek: 208
+ * ================================================================ */
+void sstf(void) {
+    int head, n;
+    int reqs[MAX_REQ];
+    int visited[MAX_REQ] = {0};
+
+    printf(&quot;\n=== Q8: SSTF Disk Scheduling ===\n&quot;);
+    printf(&quot;Enter initial head position: &quot;); scanf(&quot;%d&quot;, &amp;head);
+    printf(&quot;Enter number of requests: &quot;);    scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter cylinder requests:\n&quot;);
+    for (int i = 0; i &lt; n; i++) { printf(&quot;  [%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;reqs[i]); }
+
+    int cur = head, total = 0;
+    printf(&quot;\n%-6s %-10s %-12s\n&quot;, &quot;Step&quot;, &quot;Cylinder&quot;, &quot;Seek Dist&quot;);
+    printf(&quot;------------------------------\n&quot;);
+
+    for (int step = 0; step &lt; n; step++) {
+        int nearest = -1, min_dist = 1&lt;&lt;30;
+        for (int i = 0; i &lt; n; i++) {
+            if (!visited[i]) {
+                int d = abs(reqs[i] - cur);
+                if (d &lt; min_dist) { min_dist = d; nearest = i; }
+            }
+        }
+        visited[nearest] = 1;
+        total += min_dist;
+        printf(&quot;%-6d %-10d %-12d\n&quot;, step+1, reqs[nearest], min_dist);
+        cur = reqs[nearest];
+    }
+    printf(&quot;------------------------------\n&quot;);
+    printf(&quot;Total Seek Time: %d\n&quot;, total);
+}
+
+/* ================================================================
+ * Q9: SCAN (Elevator) Disk Scheduling
+ * ================================================================
+ * Head moves in one direction, services all requests,
+ * reverses at end.
+ *
+ * Sample Input:
+ *   Head: 50, Direction: UP, Max cylinder: 199
+ *   Requests: 82 170 43 140 24 16 190
+ * Sample Output:
+ *   Seek sequence: 82 140 170 190 199 43 24 16
+ *   Total seek: 376
+ * ================================================================ */
+int cmp_asc(const void *a, const void *b) { return *(int*)a - *(int*)b; }
+
+void scan(void) {
+    int head, n, max_cyl, dir;
+    int reqs[MAX_REQ];
+
+    printf(&quot;\n=== Q9: SCAN Disk Scheduling ===\n&quot;);
+    printf(&quot;Enter initial head position: &quot;); scanf(&quot;%d&quot;, &amp;head);
+    printf(&quot;Enter max cylinder number: &quot;);   scanf(&quot;%d&quot;, &amp;max_cyl);
+    printf(&quot;Direction (0=DOWN, 1=UP): &quot;);    scanf(&quot;%d&quot;, &amp;dir);
+    printf(&quot;Enter number of requests: &quot;);    scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter cylinder requests:\n&quot;);
+    for (int i = 0; i &lt; n; i++) { printf(&quot;  [%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;reqs[i]); }
+
+    qsort(reqs, n, sizeof(int), cmp_asc);
+
+    /* Split into left (&lt; head) and right (&gt;= head) */
+    int left[MAX_REQ], right[MAX_REQ], nl = 0, nr = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (reqs[i] &lt; head) left[nl++] = reqs[i];
+        else                right[nr++] = reqs[i];
+    }
+
+    int seq[MAX_REQ * 2 + 2], ns = 0, total = 0, cur = head;
+
+    printf(&quot;\n%-6s %-10s %-12s\n&quot;, &quot;Step&quot;, &quot;Cylinder&quot;, &quot;Seek Dist&quot;);
+    printf(&quot;------------------------------\n&quot;);
+    int step = 1;
+
+    auto void visit(int cyl);
+    void visit(int cyl) {
+        int d = abs(cyl - cur);
+        total += d;
+        printf(&quot;%-6d %-10d %-12d\n&quot;, step++, cyl, d);
+        cur = cyl;
+    }
+
+    if (dir == 1) {             /* going UP first */
+        for (int i = 0; i &lt; nr; i++) visit(right[i]);
+        visit(max_cyl);         /* go to end */
+        for (int i = nl - 1; i &gt;= 0; i--) visit(left[i]);
+    } else {                    /* going DOWN first */
+        for (int i = nl - 1; i &gt;= 0; i--) visit(left[i]);
+        visit(0);               /* go to end */
+        for (int i = 0; i &lt; nr; i++) visit(right[i]);
+    }
+    printf(&quot;------------------------------\n&quot;);
+    printf(&quot;Total Seek Time: %d\n&quot;, total);
+}
+
+/* ================================================================
+ * Q10: C-SCAN (Circular SCAN) Disk Scheduling
+ * ================================================================
+ * Head moves only in ONE direction; after reaching end,
+ * jumps back to beginning (no servicing on return).
+ *
+ * Sample Input: same as SCAN above
+ * Sample Output:
+ *   Seek sequence: 82 140 170 190 199 → 0 → 16 24 43
+ *   Total seek: 382
+ * ================================================================ */
+void cscan(void) {
+    int head, n, max_cyl;
+    int reqs[MAX_REQ];
+
+    printf(&quot;\n=== Q10: C-SCAN Disk Scheduling ===\n&quot;);
+    printf(&quot;Enter initial head position: &quot;); scanf(&quot;%d&quot;, &amp;head);
+    printf(&quot;Enter max cylinder number: &quot;);   scanf(&quot;%d&quot;, &amp;max_cyl);
+    printf(&quot;Enter number of requests: &quot;);    scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter cylinder requests:\n&quot;);
+    for (int i = 0; i &lt; n; i++) { printf(&quot;  [%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;reqs[i]); }
+
+    qsort(reqs, n, sizeof(int), cmp_asc);
+
+    int left[MAX_REQ], right[MAX_REQ], nl = 0, nr = 0;
+    for (int i = 0; i &lt; n; i++) {
+        if (reqs[i] &lt; head) left[nl++] = reqs[i];
+        else                right[nr++] = reqs[i];
+    }
+
+    int total = 0, cur = head, step = 1;
+    printf(&quot;\n%-6s %-10s %-12s\n&quot;, &quot;Step&quot;, &quot;Cylinder&quot;, &quot;Seek Dist&quot;);
+    printf(&quot;------------------------------\n&quot;);
+
+    auto void visit(int cyl);
+    void visit(int cyl) {
+        int d = abs(cyl - cur);
+        total += d;
+        printf(&quot;%-6d %-10d %-12d\n&quot;, step++, cyl, d);
+        cur = cyl;
+    }
+
+    /* Service right side */
+    for (int i = 0; i &lt; nr; i++) visit(right[i]);
+    /* Jump to max, then 0 (circular, no servicing between) */
+    total += abs(max_cyl - cur);  printf(&quot;[Jump to %d (+%d)]\n&quot;, max_cyl, abs(max_cyl - cur));
+    total += max_cyl;             printf(&quot;[Jump to 0 (+%d)]\n&quot;, max_cyl);
+    cur = 0;
+    /* Service left side */
+    for (int i = 0; i &lt; nl; i++) visit(left[i]);
+
+    printf(&quot;------------------------------\n&quot;);
+    printf(&quot;Total Seek Time: %d\n&quot;, total);
+}
+
+/* ================================================================
+ * Q11: FIFO Page Replacement
+ * ================================================================
+ * Sample Input:  Frames=3, Ref: 7 0 1 2 0 3 0 4 2 3 0 3 2 1 2
+ * Sample Output: Faults=9, Hits=6, Hit Ratio=40%
+ * ================================================================ */
+void fifo(void) {
+    int nf, n, ref[MAX_REQ];
+    printf(&quot;\n=== Q11: FIFO Page Replacement ===\n&quot;);
+    printf(&quot;Enter frames: &quot;); scanf(&quot;%d&quot;, &amp;nf);
+    printf(&quot;Enter ref count: &quot;); scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter ref string:\n&quot;);
+    for (int i = 0; i &lt; n; i++) { printf(&quot;[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;ref[i]); }
+
+    int frames[MAX_FRAMES], ptr = 0, faults = 0, hits = 0;
+    for (int i = 0; i &lt; nf; i++) frames[i] = -1;
+
+    printf(&quot;\n%-6s %-6s %-8s  Frames\n&quot;, &quot;Step&quot;, &quot;Ref&quot;, &quot;Hit/F&quot;);
+    printf(&quot;--------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++) {
+        int page = ref[i], found = 0;
+        for (int j = 0; j &lt; nf; j++) if (frames[j] == page) { found = 1; break; }
+
+        if (found) { hits++; printf(&quot;%-6d %-6d %-8s&quot;, i+1, page, &quot;HIT&quot;); }
+        else {
+            faults++;
+            frames[ptr] = page;
+            ptr = (ptr + 1) % nf;
+            printf(&quot;%-6d %-6d %-8s&quot;, i+1, page, &quot;FAULT&quot;);
+        }
+        printf(&quot;  [ &quot;); for (int j = 0; j &lt; nf; j++) { if (frames[j]==-1) printf(&quot;- &quot;); else printf(&quot;%d &quot;, frames[j]); } printf(&quot;]\n&quot;);
+    }
+    printf(&quot;--------------------------------------\n&quot;);
+    printf(&quot;Faults: %d | Hits: %d | Hit Ratio: %.2f%%\n&quot;, faults, hits, (float)hits/n*100);
+}
+
+/* ================================================================
+ * Q12: LRU Page Replacement
+ * ================================================================
+ * Evict the page that was least recently used.
+ * Sample Input:  Frames=3, Ref: 7 0 1 2 0 3 0 4 2 3 0 3 2 1 2
+ * Sample Output: Faults=8, Hits=7
+ * ================================================================ */
+void lru(void) {
+    int nf, n, ref[MAX_REQ];
+    printf(&quot;\n=== Q12: LRU Page Replacement ===\n&quot;);
+    printf(&quot;Enter frames: &quot;); scanf(&quot;%d&quot;, &amp;nf);
+    printf(&quot;Enter ref count: &quot;); scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter ref string:\n&quot;);
+    for (int i = 0; i &lt; n; i++) { printf(&quot;[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;ref[i]); }
+
+    int frames[MAX_FRAMES], last_used[MAX_FRAMES];
+    for (int i = 0; i &lt; nf; i++) { frames[i] = -1; last_used[i] = -1; }
+
+    int faults = 0, hits = 0;
+    printf(&quot;\n%-6s %-6s %-8s  Frames\n&quot;, &quot;Step&quot;, &quot;Ref&quot;, &quot;Hit/F&quot;);
+    printf(&quot;--------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++) {
+        int page = ref[i], found = -1;
+        for (int j = 0; j &lt; nf; j++) if (frames[j] == page) { found = j; break; }
+
+        if (found != -1) {
+            hits++; last_used[found] = i;
+            printf(&quot;%-6d %-6d %-8s&quot;, i+1, page, &quot;HIT&quot;);
+        } else {
+            faults++;
+            /* find free or LRU victim */
+            int vic = -1, min_t = i+1;
+            for (int j = 0; j &lt; nf; j++) {
+                if (frames[j] == -1) { vic = j; break; }
+                if (last_used[j] &lt; min_t) { min_t = last_used[j]; vic = j; }
+            }
+            frames[vic] = page; last_used[vic] = i;
+            printf(&quot;%-6d %-6d %-8s&quot;, i+1, page, &quot;FAULT&quot;);
+        }
+        printf(&quot;  [ &quot;); for (int j = 0; j &lt; nf; j++) { if (frames[j]==-1) printf(&quot;- &quot;); else printf(&quot;%d &quot;, frames[j]); } printf(&quot;]\n&quot;);
+    }
+    printf(&quot;--------------------------------------\n&quot;);
+    printf(&quot;Faults: %d | Hits: %d | Hit Ratio: %.2f%%\n&quot;, faults, hits, (float)hits/n*100);
+}
+
+/* ================================================================
+ * Q13: Second Chance (Clock) Page Replacement
+ * ================================================================
+ * Each frame has a reference bit (R).
+ * On fault: scan frames in FIFO order.
+ *   If R=0 → evict this frame.
+ *   If R=1 → clear R, advance pointer (second chance).
+ *
+ * Sample Input: Frames=3, Ref: 1 2 3 4 1 2 5 1 2 3 4 5
+ * ================================================================ */
+void second_chance(void) {
+    int nf, n, ref[MAX_REQ];
+    printf(&quot;\n=== Q13: Second Chance (Clock) Page Replacement ===\n&quot;);
+    printf(&quot;Enter frames: &quot;); scanf(&quot;%d&quot;, &amp;nf);
+    printf(&quot;Enter ref count: &quot;); scanf(&quot;%d&quot;, &amp;n);
+    printf(&quot;Enter ref string:\n&quot;);
+    for (int i = 0; i &lt; n; i++) { printf(&quot;[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;ref[i]); }
+
+    int frames[MAX_FRAMES], rbits[MAX_FRAMES];
+    for (int i = 0; i &lt; nf; i++) { frames[i] = -1; rbits[i] = 0; }
+
+    int faults = 0, hits = 0, ptr = 0;
+    printf(&quot;\n%-6s %-6s %-8s  Frames + R-bits\n&quot;, &quot;Step&quot;, &quot;Ref&quot;, &quot;Hit/F&quot;);
+    printf(&quot;----------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n; i++) {
+        int page = ref[i], found = -1;
+        for (int j = 0; j &lt; nf; j++) if (frames[j] == page) { found = j; break; }
+
+        if (found != -1) {
+            hits++; rbits[found] = 1;
+            printf(&quot;%-6d %-6d %-8s&quot;, i+1, page, &quot;HIT&quot;);
+        } else {
+            faults++;
+            /* clock algorithm */
+            while (1) {
+                if (rbits[ptr] == 0) break;
+                rbits[ptr] = 0;
+                ptr = (ptr + 1) % nf;
+            }
+            frames[ptr] = page; rbits[ptr] = 1;
+            ptr = (ptr + 1) % nf;
+            printf(&quot;%-6d %-6d %-8s&quot;, i+1, page, &quot;FAULT&quot;);
+        }
+        printf(&quot;  [ &quot;);
+        for (int j = 0; j &lt; nf; j++) {
+            if (frames[j]==-1) printf(&quot;-,R=0 &quot;);
+            else printf(&quot;%d,R=%d &quot;, frames[j], rbits[j]);
+        }
+        printf(&quot;]\n&quot;);
+    }
+    printf(&quot;----------------------------------------------\n&quot;);
+    printf(&quot;Faults: %d | Hits: %d | Hit Ratio: %.2f%%\n&quot;, faults, hits, (float)hits/n*100);
+}
+
+/* ================================================================
+ * Q14: Banker&#x27;s Algorithm — Full Multi-Resource
+ * ================================================================
+ * Safety Algorithm + Resource Request Algorithm.
+ *
+ * Sample Input:
+ *   Processes: 5, Resources: 3 (A, B, C)
+ *   Allocation:
+ *     P0: 0 1 0  P1: 2 0 0  P2: 3 0 2  P3: 2 1 1  P4: 0 0 2
+ *   Max:
+ *     P0: 7 5 3  P1: 3 2 2  P2: 9 0 2  P3: 2 2 2  P4: 4 3 3
+ *   Available: 3 3 2
+ * ================================================================ */
+void bankers(void) {
+    int np, nr;
+    int alloc[MAX_PROC][MAX_RES], max_m[MAX_PROC][MAX_RES];
+    int need[MAX_PROC][MAX_RES], avail[MAX_RES];
+
+    printf(&quot;\n=== Q14: Banker&#x27;s Algorithm (Multi-Resource) ===\n&quot;);
+    printf(&quot;Enter number of processes: &quot;); scanf(&quot;%d&quot;, &amp;np);
+    printf(&quot;Enter number of resources: &quot;); scanf(&quot;%d&quot;, &amp;nr);
+
+    printf(&quot;Enter Allocation matrix (%d x %d):\n&quot;, np, nr);
+    for (int i = 0; i &lt; np; i++) {
+        printf(&quot;  P%d: &quot;, i);
+        for (int j = 0; j &lt; nr; j++) scanf(&quot;%d&quot;, &amp;alloc[i][j]);
+    }
+
+    printf(&quot;Enter Max matrix (%d x %d):\n&quot;, np, nr);
+    for (int i = 0; i &lt; np; i++) {
+        printf(&quot;  P%d: &quot;, i);
+        for (int j = 0; j &lt; nr; j++) { scanf(&quot;%d&quot;, &amp;max_m[i][j]); need[i][j] = max_m[i][j] - alloc[i][j]; }
+    }
+
+    printf(&quot;Enter Available resources: &quot;);
+    for (int j = 0; j &lt; nr; j++) scanf(&quot;%d&quot;, &amp;avail[j]);
+
+    /* ── Print Need matrix ── */
+    printf(&quot;\nNeed Matrix (Max - Allocation):\n&quot;);
+    for (int i = 0; i &lt; np; i++) {
+        printf(&quot;  P%d: &quot;, i);
+        for (int j = 0; j &lt; nr; j++) printf(&quot;%3d&quot;, need[i][j]);
+        printf(&quot;\n&quot;);
+    }
+
+    /* ── Safety Algorithm ── */
+    int work[MAX_RES], finish[MAX_PROC] = {0};
+    for (int j = 0; j &lt; nr; j++) work[j] = avail[j];
+
+    int safe_seq[MAX_PROC], seq_len = 0;
+    int count = 0;
+
+    while (count &lt; np) {
+        int found = 0;
+        for (int i = 0; i &lt; np; i++) {
+            if (finish[i]) continue;
+            int ok = 1;
+            for (int j = 0; j &lt; nr; j++) if (need[i][j] &gt; work[j]) { ok = 0; break; }
+            if (ok) {
+                for (int j = 0; j &lt; nr; j++) work[j] += alloc[i][j];
+                finish[i] = 1;
+                safe_seq[seq_len++] = i;
+                found = 1; count++;
+            }
+        }
+        if (!found) break;
+    }
+
+    if (seq_len == np) {
+        printf(&quot;\nSystem is in SAFE STATE ✓\nSafe Sequence: &quot;);
+        for (int i = 0; i &lt; np; i++) printf(&quot;P%d%s&quot;, safe_seq[i], i&lt;np-1?&quot; → &quot;:&quot;&quot;);
+        printf(&quot;\n&quot;);
+    } else {
+        printf(&quot;\nSystem is in UNSAFE STATE ✗ — Deadlock possible!\n&quot;);
+    }
+
+    /* ── Resource Request ── */
+    printf(&quot;\nDo you want to simulate a resource request? (1=Yes/0=No): &quot;);
+    int choice; scanf(&quot;%d&quot;, &amp;choice);
+    if (!choice) return;
+
+    int pid, req[MAX_RES];
+    printf(&quot;Process ID requesting: &quot;); scanf(&quot;%d&quot;, &amp;pid);
+    printf(&quot;Request vector: &quot;);
+    for (int j = 0; j &lt; nr; j++) scanf(&quot;%d&quot;, &amp;req[j]);
+
+    /* Check: req &lt;= need */
+    for (int j = 0; j &lt; nr; j++) {
+        if (req[j] &gt; need[pid][j]) { printf(&quot;Error: Request exceeds declared max need!\n&quot;); return; }
+    }
+    /* Check: req &lt;= available */
+    for (int j = 0; j &lt; nr; j++) {
+        if (req[j] &gt; avail[j]) { printf(&quot;P%d must wait — resources not available.\n&quot;, pid); return; }
+    }
+    /* Tentatively allocate */
+    for (int j = 0; j &lt; nr; j++) {
+        avail[j]       -= req[j];
+        alloc[pid][j]  += req[j];
+        need[pid][j]   -= req[j];
+    }
+    printf(&quot;Tentative allocation done. Re-running safety check...\n&quot;);
+    /* re-run safety (recursive call would be cleaner; inline for simplicity) */
+    for (int j = 0; j &lt; nr; j++) work[j] = avail[j];
+    memset(finish, 0, sizeof(finish));
+    seq_len = 0; count = 0;
+    while (count &lt; np) {
+        int found = 0;
+        for (int i = 0; i &lt; np; i++) {
+            if (finish[i]) continue;
+            int ok = 1;
+            for (int j = 0; j &lt; nr; j++) if (need[i][j] &gt; work[j]) { ok = 0; break; }
+            if (ok) { for (int j = 0; j &lt; nr; j++) work[j] += alloc[i][j]; finish[i]=1; safe_seq[seq_len++]=i; found=1; count++; }
+        }
+        if (!found) break;
+    }
+    if (seq_len == np) {
+        printf(&quot;Request GRANTED ✓ — System remains safe.\nNew Safe Sequence: &quot;);
+        for (int i = 0; i &lt; np; i++) printf(&quot;P%d%s&quot;, safe_seq[i], i&lt;np-1?&quot; → &quot;:&quot;&quot;);
+        printf(&quot;\n&quot;);
+    } else {
+        printf(&quot;Request DENIED ✗ — Would lead to unsafe state. Rolling back.\n&quot;);
+        for (int j = 0; j &lt; nr; j++) { avail[j]+=req[j]; alloc[pid][j]-=req[j]; need[pid][j]+=req[j]; }
+    }
+}
+
+/* ================================================================
+ * MENU-DRIVEN MAIN
+ * ================================================================ */
+int main(void) {
+    int choice;
+    do {
+        printf(&quot;\n==========================================\n&quot;);
+        printf(&quot; Additional OS Lab Questions Menu\n&quot;);
+        printf(&quot;==========================================\n&quot;);
+        printf(&quot; 8.  SSTF Disk Scheduling\n&quot;);
+        printf(&quot; 9.  SCAN Disk Scheduling\n&quot;);
+        printf(&quot;10.  C-SCAN Disk Scheduling\n&quot;);
+        printf(&quot;11.  FIFO Page Replacement\n&quot;);
+        printf(&quot;12.  LRU Page Replacement\n&quot;);
+        printf(&quot;13.  Second Chance Page Replacement\n&quot;);
+        printf(&quot;14.  Banker&#x27;s Algorithm\n&quot;);
+        printf(&quot; 0.  Exit\n&quot;);
+        printf(&quot;Enter choice: &quot;); scanf(&quot;%d&quot;, &amp;choice);
+
+        switch (choice) {
+            case  8: sstf(); break;
+            case  9: scan(); break;
+            case 10: cscan(); break;
+            case 11: fifo(); break;
+            case 12: lru(); break;
+            case 13: second_chance(); break;
+            case 14: bankers(); break;
+            case  0: printf(&quot;Goodbye!\n&quot;); break;
+            default: printf(&quot;Invalid choice.\n&quot;);
+        }
+    } while (choice != 0);
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q15-18 block -->
+<div class="qcard" id="q15">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title">
+      <span class="qtag">Q15–Q18</span>
+      First Fit · Worst Fit · Paging · Segmentation · TLB Simulation
+    </div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+
+    <div class="desc" id="q16">
+      Four more complete implementations covering memory management and address translation.
+    </div>
+
+    <table class="cmp">
+      <tr><th>Q#</th><th>Algorithm</th><th>Key Idea</th></tr>
+      <tr><td>Q15a</td><td>First Fit</td><td>Allocate first block ≥ request size. Fast but fragments early.</td></tr>
+      <tr><td id="q17">Q15b</td><td>Worst Fit</td><td>Allocate largest block. Leaves biggest remainder for future.</td></tr>
+      <tr><td id="q18">Q16</td><td>Paging Translation</td><td>page_table[page_no] → frame; PA = frame×size + offset.</td></tr>
+      <tr><td>Q17</td><td>Segmentation</td><td>segment_table[seg] = (base, limit); PA = base + offset.</td></tr>
+      <tr><td>Q18</td><td>TLB Simulation</td><td>FIFO TLB cache; hit = 1 mem access, miss = 2 mem accesses.</td></tr>
+    </table>
+
+    <div class="io-grid">
+      <div class="io-box">
+        <h4>Segmentation Sample (Q17)</h4>
+        <pre>Segment Table:
+  Seg 0: base=219, limit=600
+  Seg 1: base=2300, limit=14
+Logical (0, 430) → 219 + 430 = 649
+Logical (1, 20)  → SEGMENT FAULT
+                   (offset 20 &gt;= limit 14)</pre>
+      </div>
+      <div class="io-box">
+        <h4>TLB Simulation Sample (Q18)</h4>
+        <pre>Page table: [2,8,3,1,9,5]
+TLB size: 4 (FIFO)
+Ref page 0 → MISS → load frame 2
+Ref page 1 → MISS → load frame 8
+Ref page 0 → HIT  → frame 2
+EAT = 0.4×110 + 0.6×210 = 170 ns</pre>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span>q15_to_q18_additional.c — Menu-driven (4 algorithms)</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre class="code">/*
+ * ADDITIONAL QUESTIONS (continued)
+ *
+ * Q15 : First Fit &amp; Worst Fit Memory Allocation
+ * Q16 : Paging — Physical Address from Page Table
+ * Q17 : Segmentation — Address Translation
+ * Q18 : TLB Simulation (full hit/miss/page-table walk)
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_BLOCKS 20
+#define MAX_PROC   20
+#define MAX_SEG    10
+#define TLB_SIZE   4
+
+/* ================================================================
+ * Q15: First Fit &amp; Worst Fit Memory Allocation
+ * ================================================================
+ * First Fit: allocate the FIRST block that is large enough.
+ * Worst Fit: allocate the LARGEST block (maximise leftover).
+ *
+ * Sample Input:
+ *   Blocks:    100  500  200  300  600
+ *   Processes: 212  417  112  426
+ *
+ * Expected First Fit Output:
+ *   P0(212) → B1(500)  P1(417) → B4(600)  P2(112) → B0(100)?? no
+ *   (depends on sizes)
+ * ================================================================ */
+
+typedef struct { int id, size; } Block;
+
+void print_alloc(Block *blocks, int nb, int *alloc, int np) {
+    printf(&quot;  Memory Blocks after allocation:\n&quot;);
+    printf(&quot;  %-8s %-10s %-15s\n&quot;, &quot;Block&quot;, &quot;Orig Size&quot;, &quot;Status&quot;);
+    for (int i = 0; i &lt; nb; i++) {
+        if (alloc[i] == -1)
+            printf(&quot;  B%-6d %-10d %-15s\n&quot;, i, blocks[i].size, &quot;FREE&quot;);
+        else
+            printf(&quot;  B%-6d %-10d → P%-13d\n&quot;, i, blocks[i].size, alloc[i]);
+    }
+}
+
+void first_fit(void) {
+    int nb, np;
+    Block blocks[MAX_BLOCKS];
+    int proc_sizes[MAX_PROC];
+    int assigned[MAX_PROC], alloc[MAX_BLOCKS];
+
+    printf(&quot;\n=== Q15a: First Fit Memory Allocation ===\n&quot;);
+    printf(&quot;Enter number of memory blocks: &quot;); scanf(&quot;%d&quot;, &amp;nb);
+    for (int i = 0; i &lt; nb; i++) {
+        printf(&quot;  Block[%d] size: &quot;, i); scanf(&quot;%d&quot;, &amp;blocks[i].size);
+        blocks[i].id = i; alloc[i] = -1;
+    }
+    printf(&quot;Enter number of processes: &quot;); scanf(&quot;%d&quot;, &amp;np);
+    for (int i = 0; i &lt; np; i++) {
+        printf(&quot;  Process P%d size: &quot;, i); scanf(&quot;%d&quot;, &amp;proc_sizes[i]);
+        assigned[i] = -1;
+    }
+
+    /* First Fit */
+    int free_left[MAX_BLOCKS];
+    for (int i = 0; i &lt; nb; i++) free_left[i] = blocks[i].size;
+
+    for (int i = 0; i &lt; np; i++) {
+        for (int j = 0; j &lt; nb; j++) {
+            if (free_left[j] &gt;= proc_sizes[i]) {
+                assigned[i] = j;
+                free_left[j] -= proc_sizes[i];
+                alloc[j] = i;
+                break;
+            }
+        }
+    }
+
+    printf(&quot;\nAllocation Result:\n&quot;);
+    printf(&quot;%-10s %-10s %-15s\n&quot;, &quot;Process&quot;, &quot;Size&quot;, &quot;Block Assigned&quot;);
+    for (int i = 0; i &lt; np; i++) {
+        if (assigned[i] == -1)
+            printf(&quot;P%-8d %-10d NOT ALLOCATED\n&quot;, i, proc_sizes[i]);
+        else
+            printf(&quot;P%-8d %-10d B%d\n&quot;, i, proc_sizes[i], assigned[i]);
+    }
+    print_alloc(blocks, nb, alloc, np);
+}
+
+void worst_fit(void) {
+    int nb, np;
+    Block blocks[MAX_BLOCKS];
+    int proc_sizes[MAX_PROC];
+    int assigned[MAX_PROC], alloc[MAX_BLOCKS];
+
+    printf(&quot;\n=== Q15b: Worst Fit Memory Allocation ===\n&quot;);
+    printf(&quot;Enter number of memory blocks: &quot;); scanf(&quot;%d&quot;, &amp;nb);
+    for (int i = 0; i &lt; nb; i++) {
+        printf(&quot;  Block[%d] size: &quot;, i); scanf(&quot;%d&quot;, &amp;blocks[i].size);
+        blocks[i].id = i; alloc[i] = -1;
+    }
+    printf(&quot;Enter number of processes: &quot;); scanf(&quot;%d&quot;, &amp;np);
+    for (int i = 0; i &lt; np; i++) {
+        printf(&quot;  Process P%d size: &quot;, i); scanf(&quot;%d&quot;, &amp;proc_sizes[i]);
+        assigned[i] = -1;
+    }
+
+    int free_left[MAX_BLOCKS];
+    for (int i = 0; i &lt; nb; i++) free_left[i] = blocks[i].size;
+
+    for (int i = 0; i &lt; np; i++) {
+        int worst = -1, max_size = -1;
+        for (int j = 0; j &lt; nb; j++) {
+            if (free_left[j] &gt;= proc_sizes[i] &amp;&amp; free_left[j] &gt; max_size) {
+                max_size = free_left[j]; worst = j;
+            }
+        }
+        if (worst != -1) {
+            assigned[i] = worst;
+            free_left[worst] -= proc_sizes[i];
+            alloc[worst] = i;
+        }
+    }
+
+    printf(&quot;\nAllocation Result:\n&quot;);
+    printf(&quot;%-10s %-10s %-15s\n&quot;, &quot;Process&quot;, &quot;Size&quot;, &quot;Block Assigned&quot;);
+    for (int i = 0; i &lt; np; i++) {
+        if (assigned[i] == -1)
+            printf(&quot;P%-8d %-10d NOT ALLOCATED\n&quot;, i, proc_sizes[i]);
+        else
+            printf(&quot;P%-8d %-10d B%d\n&quot;, i, proc_sizes[i], assigned[i]);
+    }
+    print_alloc(blocks, nb, alloc, np);
+}
+
+/* ================================================================
+ * Q16: Paging — Translate Logical → Physical Address
+ * ================================================================
+ * Given a page table (frame number for each page),
+ * translate a logical address to physical address.
+ *
+ * physical_address = frame_number × page_size + offset
+ *
+ * Sample Input:
+ *   Page size: 512 bytes
+ *   Page table: [5, 8, 2, 9, 1]  (page 0→frame 5, etc.)
+ *   Logical addresses: 1280  1536  2050
+ * ================================================================ */
+void paging_translate(void) {
+    int page_size, n_pages, n_addrs;
+    int page_table[MAX_PROC], logical_addrs[MAX_PROC];
+
+    printf(&quot;\n=== Q16: Paging Address Translation ===\n&quot;);
+    printf(&quot;Enter page size (bytes): &quot;); scanf(&quot;%d&quot;, &amp;page_size);
+    printf(&quot;Enter number of pages (page table size): &quot;); scanf(&quot;%d&quot;, &amp;n_pages);
+    printf(&quot;Enter page table (frame number for each page):\n&quot;);
+    for (int i = 0; i &lt; n_pages; i++) {
+        printf(&quot;  Page %d → Frame: &quot;, i); scanf(&quot;%d&quot;, &amp;page_table[i]);
+    }
+    printf(&quot;Enter number of logical addresses to translate: &quot;); scanf(&quot;%d&quot;, &amp;n_addrs);
+    for (int i = 0; i &lt; n_addrs; i++) {
+        printf(&quot;  Logical[%d]: &quot;, i); scanf(&quot;%d&quot;, &amp;logical_addrs[i]);
+    }
+
+    printf(&quot;\n%-14s %-12s %-10s %-12s %-16s\n&quot;,
+           &quot;Logical Addr&quot;, &quot;Page No.&quot;, &quot;Offset&quot;, &quot;Frame No.&quot;, &quot;Physical Addr&quot;);
+    printf(&quot;---------------------------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n_addrs; i++) {
+        int la     = logical_addrs[i];
+        int pn     = la / page_size;
+        int offset = la % page_size;
+        if (pn &gt;= n_pages) { printf(&quot;%-14d  PAGE FAULT (page %d out of range)\n&quot;, la, pn); continue; }
+        int frame  = page_table[pn];
+        int pa     = frame * page_size + offset;
+        printf(&quot;%-14d %-12d %-10d %-12d %-16d\n&quot;, la, pn, offset, frame, pa);
+    }
+}
+
+/* ================================================================
+ * Q17: Segmentation — Address Translation
+ * ================================================================
+ * Segment table: (base, limit) per segment.
+ * Logical address: (segment, offset)
+ * Physical = base[segment] + offset  (if offset &lt; limit)
+ *
+ * Sample Input:
+ *   Segments: 5
+ *   Segment Table:
+ *     Seg 0: base=219  limit=600
+ *     Seg 1: base=2300 limit=14
+ *     Seg 2: base=90   limit=100
+ *     Seg 3: base=1327 limit=580
+ *     Seg 4: base=1952 limit=96
+ *   Logical address: (0, 430) → 649
+ * ================================================================ */
+void segmentation(void) {
+    int n_segs, n_addrs;
+    int base[MAX_SEG], limit[MAX_SEG];
+
+    printf(&quot;\n=== Q17: Segmentation Address Translation ===\n&quot;);
+    printf(&quot;Enter number of segments: &quot;); scanf(&quot;%d&quot;, &amp;n_segs);
+    printf(&quot;Enter segment table (base limit):\n&quot;);
+    for (int i = 0; i &lt; n_segs; i++) {
+        printf(&quot;  Seg %d base: &quot;, i); scanf(&quot;%d&quot;, &amp;base[i]);
+        printf(&quot;  Seg %d limit: &quot;, i); scanf(&quot;%d&quot;, &amp;limit[i]);
+    }
+    printf(&quot;Enter number of addresses: &quot;); scanf(&quot;%d&quot;, &amp;n_addrs);
+
+    printf(&quot;\n%-6s %-8s %-12s %-12s %-12s\n&quot;,
+           &quot;Seg&quot;, &quot;Offset&quot;, &quot;Base&quot;, &quot;Limit&quot;, &quot;Physical&quot;);
+    printf(&quot;----------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n_addrs; i++) {
+        int seg, offset;
+        printf(&quot;Enter (segment offset): &quot;); scanf(&quot;%d %d&quot;, &amp;seg, &amp;offset);
+        if (seg &gt;= n_segs) { printf(&quot;  SEGMENT FAULT: segment %d does not exist\n&quot;, seg); continue; }
+        if (offset &gt;= limit[seg]) {
+            printf(&quot;  %-6d %-8d %-12d %-12d SEGMENT FAULT (offset &gt;= limit)\n&quot;,
+                   seg, offset, base[seg], limit[seg]);
+        } else {
+            int pa = base[seg] + offset;
+            printf(&quot;  %-6d %-8d %-12d %-12d %-12d\n&quot;,
+                   seg, offset, base[seg], limit[seg], pa);
+        }
+    }
+}
+
+/* ================================================================
+ * Q18: TLB Simulation
+ * ================================================================
+ * TLB = Translation Lookaside Buffer (small cache of page→frame mappings)
+ * On each access:
+ *   TLB Hit  : frame found in TLB (fast path, 1 memory access)
+ *   TLB Miss : look up page table, add to TLB (2 memory accesses)
+ * Replacement policy: FIFO for TLB
+ *
+ * Sample Input:
+ *   Page table: [2, 8, 3, 1, 9, 5]
+ *   Page references: 0 1 2 3 4 0 1 0 3 2
+ * ================================================================ */
+void tlb_simulation(void) {
+    int page_size, n_pages, n_refs;
+    int page_table[MAX_PROC];
+
+    printf(&quot;\n=== Q18: TLB Simulation ===\n&quot;);
+    printf(&quot;Enter page size (bytes): &quot;);     scanf(&quot;%d&quot;, &amp;page_size);
+    printf(&quot;Enter page table size: &quot;);       scanf(&quot;%d&quot;, &amp;n_pages);
+    printf(&quot;Enter page table (frame for each page):\n&quot;);
+    for (int i = 0; i &lt; n_pages; i++) {
+        printf(&quot;  Page %d → Frame: &quot;, i);  scanf(&quot;%d&quot;, &amp;page_table[i]);
+    }
+    printf(&quot;Enter number of references: &quot;); scanf(&quot;%d&quot;, &amp;n_refs);
+
+    /* TLB: FIFO arrays */
+    int tlb_page[TLB_SIZE], tlb_frame[TLB_SIZE];
+    for (int i = 0; i &lt; TLB_SIZE; i++) { tlb_page[i] = -1; tlb_frame[i] = -1; }
+    int tlb_ptr = 0;
+
+    int tlb_hits = 0, tlb_misses = 0;
+    double tlb_time = 5.0, mem_time = 100.0;   /* ns */
+    double total_time = 0.0;
+
+    printf(&quot;\n%-6s %-6s %-8s %-10s %-12s\n&quot;,
+           &quot;Step&quot;, &quot;Page&quot;, &quot;TLB&quot;, &quot;Frame&quot;, &quot;Accesses&quot;);
+    printf(&quot;--------------------------------------------------\n&quot;);
+
+    for (int i = 0; i &lt; n_refs; i++) {
+        int page; printf(&quot;  Ref[%d] page: &quot;, i); scanf(&quot;%d&quot;, &amp;page);
+
+        /* Search TLB */
+        int hit = -1;
+        for (int j = 0; j &lt; TLB_SIZE; j++)
+            if (tlb_page[j] == page) { hit = j; break; }
+
+        if (hit != -1) {
+            tlb_hits++;
+            int frame = tlb_frame[hit];
+            total_time += tlb_time + mem_time;   /* TLB + 1 memory */
+            printf(&quot;%-6d %-6d %-8s %-10d %-12s\n&quot;, i+1, page, &quot;HIT&quot;, frame, &quot;TLB+Mem&quot;);
+        } else {
+            tlb_misses++;
+            int frame = page_table[page];
+            /* Add to TLB (FIFO) */
+            tlb_page[tlb_ptr]  = page;
+            tlb_frame[tlb_ptr] = frame;
+            tlb_ptr = (tlb_ptr + 1) % TLB_SIZE;
+            total_time += tlb_time + 2.0 * mem_time;   /* TLB + 2 memory */
+            printf(&quot;%-6d %-6d %-8s %-10d %-12s\n&quot;, i+1, page, &quot;MISS&quot;, frame, &quot;TLB+2×Mem&quot;);
+        }
+    }
+    printf(&quot;--------------------------------------------------\n&quot;);
+    double hit_ratio = (double)tlb_hits / n_refs;
+    printf(&quot;TLB Hits   : %d\nTLB Misses : %d\n&quot;, tlb_hits, tlb_misses);
+    printf(&quot;Hit Ratio  : %.2f%%\n&quot;, hit_ratio * 100);
+    printf(&quot;EAT        = %.2f × %.2f + %.2f × %.2f\n&quot;,
+           hit_ratio, tlb_time + mem_time,
+           1.0 - hit_ratio, tlb_time + 2.0 * mem_time);
+    printf(&quot;EAT        = %.2f ns\n&quot;, total_time / n_refs);
+}
+
+/* ── menu main ───────────────────────────────────── */
+int main(void) {
+    int choice;
+    do {
+        printf(&quot;\n==========================================\n&quot;);
+        printf(&quot; Additional OS Lab Questions (Part 2)\n&quot;);
+        printf(&quot;==========================================\n&quot;);
+        printf(&quot;15a. First Fit Memory Allocation\n&quot;);
+        printf(&quot;15b. Worst Fit Memory Allocation\n&quot;);
+        printf(&quot;16.  Paging Address Translation\n&quot;);
+        printf(&quot;17.  Segmentation Address Translation\n&quot;);
+        printf(&quot;18.  TLB Simulation\n&quot;);
+        printf(&quot; 0.  Exit\n&quot;);
+        printf(&quot;Choice: &quot;); scanf(&quot;%d&quot;, &amp;choice);
+        switch (choice) {
+            case 151: first_fit(); break;
+            case 152: worst_fit(); break;
+            case 15:  first_fit(); worst_fit(); break;
+            case 16:  paging_translate(); break;
+            case 17:  segmentation(); break;
+            case 18:  tlb_simulation(); break;
+            case 0:   break;
+            default:  printf(&quot;Invalid.\n&quot;);
+        }
+    } while (choice != 0);
+    return 0;
+}
+</pre>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PART 3 — ALGORITHMS EXPLAINED
+═════════════════════════════════════════ -->
+<h2 class="section-title" id="algos">
+  <span class="num">3</span> Algorithm Reference
+</h2>
+
+<!-- Disk Scheduling -->
+<div class="qcard open">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title"><span class="qtag">DISK</span>Disk Scheduling Algorithms</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <table class="cmp">
+      <tr>
+        <th>Algorithm</th><th>Order</th><th>Pros</th><th>Cons</th>
+      </tr>
+      <tr>
+        <td><strong>FCFS</strong></td>
+        <td>Arrival order</td>
+        <td>Fair, no starvation</td>
+        <td>High seek time, no optimisation</td>
+      </tr>
+      <tr>
+        <td><strong>LCFS / LIFO</strong></td>
+        <td>Reverse arrival</td>
+        <td>Simple</td>
+        <td>Starves old requests</td>
+      </tr>
+      <tr>
+        <td><strong>SSTF</strong></td>
+        <td>Nearest cylinder</td>
+        <td>Low avg seek time</td>
+        <td>Starvation for far cylinders</td>
+      </tr>
+      <tr>
+        <td><strong>LSTF</strong></td>
+        <td>Farthest cylinder</td>
+        <td>Theoretical extreme</td>
+        <td>Extremely poor performance</td>
+      </tr>
+      <tr>
+        <td><strong>SCAN (Elevator)</strong></td>
+        <td>One dir, reverse at end</td>
+        <td>No starvation, good throughput</td>
+        <td>Uneven wait time (edge vs centre)</td>
+      </tr>
+      <tr>
+        <td><strong>C-SCAN</strong></td>
+        <td>One dir, jump to start</td>
+        <td>Uniform wait time</td>
+        <td>Wasted seek on return</td>
+      </tr>
+      <tr>
+        <td><strong>LOOK</strong></td>
+        <td>Like SCAN but reverse at last request</td>
+        <td>Better than SCAN</td>
+        <td>Slightly more complex</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- Page Replacement -->
+<div class="qcard open">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title"><span class="qtag">PAGE</span>Page Replacement Algorithms</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <table class="cmp">
+      <tr>
+        <th>Algorithm</th><th>Evict Policy</th><th>Anomaly?</th><th>Practical?</th>
+      </tr>
+      <tr>
+        <td><strong>FIFO</strong></td>
+        <td>Oldest loaded page</td>
+        <td>Bélády anomaly (more frames → more faults sometimes)</td>
+        <td>Simple, rarely used</td>
+      </tr>
+      <tr>
+        <td><strong>LRU</strong></td>
+        <td>Least recently used</td>
+        <td>None</td>
+        <td>Yes (approximated in HW)</td>
+      </tr>
+      <tr>
+        <td><strong>MRU</strong></td>
+        <td>Most recently used</td>
+        <td>Yes</td>
+        <td>Rarely (sequential scans)</td>
+      </tr>
+      <tr>
+        <td><strong>LFU</strong></td>
+        <td>Least frequently used</td>
+        <td>None</td>
+        <td>Moderate</td>
+      </tr>
+      <tr>
+        <td><strong>MFU</strong></td>
+        <td>Most frequently used</td>
+        <td>Yes</td>
+        <td>Rarely</td>
+      </tr>
+      <tr>
+        <td><strong>Optimal (OPT)</strong></td>
+        <td>Farthest future use</td>
+        <td>None</td>
+        <td>No — requires future knowledge</td>
+      </tr>
+      <tr>
+        <td><strong>Second Chance</strong></td>
+        <td>FIFO + R-bit check</td>
+        <td>None</td>
+        <td>Yes — used in real OS</td>
+      </tr>
+    </table>
+
+    <div class="algo-box">
+      <h3>Key Formulas</h3>
+      <div class="formula">
+        Hit Ratio = Total Hits / Total References × 100%<br>
+        Fault Ratio = Total Faults / Total References × 100%<br>
+        Hit Ratio + Fault Ratio = 100%
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Memory Allocation -->
+<div class="qcard open">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title"><span class="qtag">MEM</span>Memory Allocation Strategies</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <table class="cmp">
+      <tr><th>Strategy</th><th>Find Block</th><th>Fragment?</th><th>Speed</th></tr>
+      <tr>
+        <td><strong>First Fit</strong></td>
+        <td>First block ≥ size (scan from start)</td>
+        <td>External fragmentation near start</td>
+        <td>Fast O(n)</td>
+      </tr>
+      <tr>
+        <td><strong>Best Fit</strong></td>
+        <td>Smallest block ≥ size</td>
+        <td>Many tiny fragments</td>
+        <td>O(n) scan</td>
+      </tr>
+      <tr>
+        <td><strong>Worst Fit</strong></td>
+        <td>Largest block ≥ size</td>
+        <td>Maximises leftover</td>
+        <td>O(n) scan</td>
+      </tr>
+    </table>
+    <div class="note">Best Fit minimises wasted space per allocation, but creates the most unusable tiny fragments overall. First Fit is fastest in practice.</div>
+  </div>
+</div>
+
+<!-- Banker's Algorithm -->
+<div class="qcard open">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title"><span class="qtag">BANK</span>Banker's Algorithm — Safety &amp; Request</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="algo-box">
+      <h3>Data Structures</h3>
+      <ul>
+        <li><strong>Available[r]</strong> — number of free instances of each resource</li>
+        <li><strong>Max[p][r]</strong> — maximum demand of process p for resource r</li>
+        <li><strong>Allocation[p][r]</strong> — currently allocated to process p</li>
+        <li><strong>Need[p][r]</strong> = Max[p][r] − Allocation[p][r]</li>
+      </ul>
+    </div>
+    <div class="algo-box">
+      <h3>Safety Algorithm</h3>
+      <ul>
+        <li>Work = Available; Finish[i] = false for all i</li>
+        <li>Find i where Finish[i]=false AND Need[i] ≤ Work</li>
+        <li>Work += Allocation[i]; Finish[i] = true</li>
+        <li>Repeat until no such i found</li>
+        <li>Safe iff all Finish[i] = true</li>
+      </ul>
+    </div>
+    <div class="algo-box">
+      <h3>Resource Request Algorithm</h3>
+      <ul>
+        <li>If Request &gt; Need[i] → error (exceeds declared max)</li>
+        <li>If Request &gt; Available → wait (resources not free)</li>
+        <li>Tentatively: Available -= Request; Allocation[i] += Request; Need[i] -= Request</li>
+        <li>Run Safety Algorithm. If safe → grant. Else → roll back.</li>
+      </ul>
+    </div>
+    <div class="formula">
+      Time Complexity: O(n² × r) per safety check<br>
+      n = processes, r = resource types
+    </div>
+  </div>
+</div>
+
+<!-- EAT & TLB -->
+<div class="qcard open">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title"><span class="qtag">TLB</span>Effective Access Time &amp; TLB Theory</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <div class="algo-box">
+      <h3>TLB (Translation Lookaside Buffer)</h3>
+      <ul>
+        <li>Small, fast associative cache for page-table entries</li>
+        <li>Typical size: 16–512 entries</li>
+        <li>Hit ratio (α) typically 80–99% in practice</li>
+        <li>On TLB hit: 1 memory access (for data)</li>
+        <li>On TLB miss: page table walk + 1 memory access = 2 total</li>
+      </ul>
+    </div>
+    <div class="formula">
+      Single-level paging:<br>
+      &nbsp;&nbsp;EAT = α(t_TLB + t_mem) + (1-α)(t_TLB + 2·t_mem)<br>
+      &nbsp;&nbsp;EAT = t_TLB + (2 - α)·t_mem<br><br>
+      k-level paging (no TLB):<br>
+      &nbsp;&nbsp;EAT = (k + 1) × t_mem<br><br>
+      k-level paging (with TLB):<br>
+      &nbsp;&nbsp;EAT = α(t_TLB + t_mem) + (1-α)(t_TLB + (k+1)·t_mem)
+    </div>
+    <div class="note">
+      With α=0.98, t_TLB=10ns, t_mem=100ns:<br>
+      EAT = 10 + (2 - 0.98)×100 = 10 + 102 = 112ns (vs 200ns without TLB → 43% speedup)
+    </div>
+  </div>
+</div>
+
+<!-- Quick reference formulas -->
+<div class="qcard open">
+  <div class="qcard-header" onclick="toggle(this)">
+    <div class="qcard-title"><span class="qtag">REF</span>Quick Formula Sheet</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="qcard-body">
+    <table class="cmp">
+      <tr><th>Formula</th><th>Expression</th></tr>
+      <tr><td>Page Number</td><td><code>LA / page_size</code></td></tr>
+      <tr><td>Offset</td><td><code>LA % page_size</code>  or  <code>LA &amp; (page_size - 1)</code></td></tr>
+      <tr><td>Physical Address</td><td><code>frame_number × page_size + offset</code></td></tr>
+      <tr><td>Number of pages</td><td><code>logical_space / page_size</code></td></tr>
+      <tr><td>Number of frames</td><td><code>physical_memory / page_size</code></td></tr>
+      <tr><td>Offset bits</td><td><code>log₂(page_size)</code></td></tr>
+      <tr><td>Page table size</td><td><code>number_of_pages × entry_size</code></td></tr>
+      <tr><td>Hit Ratio</td><td><code>Hits / Total_References</code></td></tr>
+      <tr><td>EAT (single-level)</td><td><code>t_TLB + (2 - α) × t_mem</code></td></tr>
+      <tr><td>SEEK (total)</td><td><code>Σ |cylinder[i] - cylinder[i-1]|</code></td></tr>
+      <tr><td>Seg. Physical Addr</td><td><code>base[seg] + offset</code>  (only if offset &lt; limit)</td></tr>
+      <tr><td>Internal fragmentation</td><td><code>block_size - process_size</code></td></tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer>
+  <p>OS Lab EndSem Prep &nbsp;·&nbsp; <span>18 Questions</span> &nbsp;·&nbsp;
+     All C programs compile with <code>gcc -O2 -lm</code> &nbsp;·&nbsp;
+     Good luck! 🎯
+  </p>
+</footer>
+
+<script>
+  function toggle(header) {
+    const card = header.parentElement;
+    card.classList.toggle('open');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre.code');
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => btn.textContent = orig, 1800);
+    });
+  }
+
+  // Open card if hash matches element inside it
+  window.addEventListener('hashchange', function() {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) {
+      const card = target.closest('.qcard');
+      if (card) card.classList.add('open');
+      target.scrollIntoView({behavior:'smooth'});
+    }
+  });
+</script>
+</body>
+</html>

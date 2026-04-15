@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 8 – Deadlock Management Algorithms | OS Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fdf8f2; --bg2:#faf3ea; --bg3:#f5ead8; --bg4:#ede0c8; --bg5:#e4d4b4;
+  --ink:#2c1f0e; --ink2:#5a4228; --ink3:#8a6a48; --ink4:#b89878;
+  --accent:#6c4dc4; --accent2:#9370e8; --green:#2a7a5c; --blue:#2a5fa0;
+  --red:#c0402a; --yellow:#b07a10; --teal:#1a7a88;
+  --border:rgba(108,77,196,0.15); --border2:rgba(160,110,60,0.1);
+  --shadow:0 2px 12px rgba(80,40,10,0.08);
+  --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif; --serif:'Lora',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.8;font-size:15px}
+nav{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--bg2);border-right:1px solid var(--border2);overflow-y:auto;z-index:100;padding:24px 0;scrollbar-width:thin;scrollbar-color:var(--bg5) transparent}
+.nav-logo{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--accent);padding:0 20px 20px;border-bottom:1px solid var(--border2);margin-bottom:16px}
+.nav-logo span{display:block;color:var(--ink3);font-size:11px;font-weight:400;margin-top:2px;font-family:var(--sans)}
+nav a{display:block;padding:7px 20px;color:var(--ink2);text-decoration:none;font-size:12.5px;border-left:2px solid transparent;transition:all 0.15s}
+nav a:hover,nav a.active{color:var(--accent);border-left-color:var(--accent);background:rgba(108,77,196,0.06)}
+.nav-section{font-size:10px;font-weight:600;color:var(--ink4);padding:12px 20px 4px;letter-spacing:0.1em;text-transform:uppercase}
+.progress-bar{position:fixed;top:0;left:240px;right:0;height:3px;background:var(--bg4);z-index:200}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.1s}
+main{margin-left:240px;padding:0 52px 100px;max-width:980px}
+.hero{padding:64px 0 48px;border-bottom:1px solid var(--border2);margin-bottom:56px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(108,77,196,0.08);border:1px solid rgba(108,77,196,0.25);color:var(--accent);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-family:var(--serif);font-size:42px;font-weight:700;line-height:1.15;color:var(--ink);margin-bottom:16px}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero>p{color:var(--ink2);font-size:16px;max-width:600px;line-height:1.7}
+.prereq-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.prereq-tag{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border2);color:var(--ink3)}
+.prereq-tag.before{border-color:rgba(42,122,92,0.3);color:var(--green)}
+.prereq-tag.after{border-color:rgba(108,77,196,0.3);color:var(--accent)}
+section{margin-bottom:72px;scroll-margin-top:24px}
+.section-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border2)}
+h2{font-family:var(--serif);font-size:28px;font-weight:700;margin-bottom:20px;color:var(--ink)}
+h3{font-family:var(--serif);font-size:19px;font-weight:600;margin:32px 0 12px;color:var(--ink)}
+h4{font-size:13px;font-weight:600;color:var(--accent);margin:20px 0 8px;letter-spacing:0.03em;text-transform:uppercase}
+p{color:var(--ink2);margin-bottom:14px}
+strong{font-weight:600}
+em{font-style:italic}
+main p strong,.card p strong,.info-card p strong{color:var(--ink)}
+ul,ol{color:var(--ink2);padding-left:20px;margin-bottom:14px}
+li{margin-bottom:6px}
+.card{background:#fff;border:1px solid var(--border2);border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:var(--shadow)}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.info-card{background:var(--bg3);border-radius:10px;padding:18px 20px;border-left:3px solid var(--accent)}
+.info-card.warn{border-left-color:var(--yellow)}
+.info-card.danger{border-left-color:var(--red)}
+.info-card.success{border-left-color:var(--green)}
+.info-card h4{margin-top:0}
+.info-card p{color:var(--ink2)}
+.code-wrap{position:relative;margin:20px 0}
+.code-label{position:absolute;top:-1px;right:12px;font-size:10px;font-family:var(--mono);background:var(--accent);color:#fff;padding:2px 8px;border-radius:0 0 6px 6px;letter-spacing:0.05em;text-transform:uppercase}
+pre{background:#2c1f0e;color:#f0e6d6;border-radius:10px;padding:24px 22px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.7;tab-size:4}
+.kw{color:#e8a87c}.fn{color:#7ec8a4}.str{color:#c8e87a}.num{color:#f0c070}.cm{color:#8a6a50;font-style:italic}.type{color:#f0a060}.var{color:#f0e6d6}.op{color:#aad4f0}
+.table-wrap{overflow-x:auto;margin:20px 0;border-radius:10px;border:1px solid var(--border2)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--bg3);color:var(--accent);font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;padding:10px 14px;text-align:left;border-bottom:2px solid var(--bg5)}
+td{padding:9px 14px;border-bottom:1px solid var(--border2);color:var(--ink2);font-family:var(--mono);font-size:12.5px}
+tr:hover td{background:var(--bg2)}
+.highlight-row td{color:var(--green);font-weight:500}
+.algo-steps{counter-reset:step;list-style:none;padding:0}
+.algo-steps li{counter-increment:step;display:grid;grid-template-columns:36px 1fr;gap:12px;margin-bottom:12px;padding:12px 16px 12px 0;border-bottom:1px solid var(--border2)}
+.algo-steps li::before{content:counter(step);width:26px;height:26px;border-radius:50%;background:rgba(108,77,196,0.1);border:1.5px solid rgba(108,77,196,0.4);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px}
+.tab-bar{display:flex;gap:4px;margin-bottom:-1px}
+.tab-btn{padding:7px 16px;font-size:12.5px;font-weight:500;background:var(--bg3);border:1px solid var(--border2);border-bottom:none;border-radius:8px 8px 0 0;color:var(--ink2);cursor:pointer;transition:all 0.15s}
+.tab-btn.active{background:#fff;color:var(--accent);border-color:rgba(108,77,196,0.25);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.sim-container{background:#fff;border:1px solid var(--border2);border-radius:12px;padding:28px;margin:24px 0;box-shadow:var(--shadow)}
+.sim-title{font-family:var(--serif);font-size:16px;font-weight:600;margin-bottom:20px;color:var(--teal)}
+.matrix-grid{display:grid;gap:16px;margin-bottom:20px}
+.matrix-label{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+.matrix-table{border-collapse:collapse}
+.matrix-table th{background:var(--bg3);padding:6px 14px;font-size:11px;color:var(--accent)}
+.matrix-table td{padding:5px 14px;font-family:var(--mono);font-size:13px}
+.matrix-table input{width:40px;background:var(--bg2);border:1.5px solid var(--bg5);color:var(--ink);text-align:center;padding:4px 6px;border-radius:4px;font-family:var(--mono);font-size:12px}
+.matrix-table input:focus{outline:none;border-color:var(--accent2)}
+.sim-btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;margin-right:8px;font-family:var(--sans)}
+.sim-btn.primary{background:var(--accent);color:#fff}
+.sim-btn.primary:hover{background:var(--accent2)}
+.sim-btn.secondary{background:var(--bg3);color:var(--ink2);border:1px solid var(--border2)}
+.sim-output{margin-top:20px;background:#2c1f0e;border-radius:8px;padding:16px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.8;min-height:80px;display:none;white-space:pre-wrap;color:#f0e6d6}
+.safe{color:#7ec8a4}.unsafe{color:#e88070}.step-out{color:#b09878}
+.qa-item{border:1px solid var(--border2);border-radius:10px;margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
+.qa-q{padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;color:var(--ink);font-size:14px;transition:background 0.15s}
+.qa-q:hover{background:var(--bg2)}
+.qa-q .chevron{color:var(--ink4);transition:transform 0.2s;font-size:12px}
+.qa-q.open .chevron{transform:rotate(180deg)}
+.qa-a{display:none;padding:14px 18px;background:var(--bg2);color:var(--ink2);font-size:13.5px;line-height:1.7;border-top:1px solid var(--border2)}
+.qa-a code{font-family:var(--mono);font-size:12px;color:var(--teal)}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.summary-card{background:#fff;border-radius:10px;padding:18px;border:1px solid var(--border2);box-shadow:var(--shadow);border-left:3px solid var(--accent)}
+.summary-card h4{color:var(--accent);margin-top:0;margin-bottom:10px;font-size:13px;text-transform:none;letter-spacing:0}
+.summary-card ul{font-size:12.5px}.summary-card li{margin-bottom:4px}
+.mistake{display:flex;gap:14px;margin-bottom:14px;padding:14px 18px;background:rgba(192,64,42,0.05);border:1px solid rgba(192,64,42,0.15);border-radius:10px}
+.mistake-icon{width:28px;height:28px;border-radius:50%;background:rgba(192,64,42,0.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px}
+.fix-icon{background:rgba(42,122,92,0.1);color:var(--green)}
+.formula{background:rgba(108,77,196,0.07);border:1px solid rgba(108,77,196,0.2);border-radius:8px;padding:12px 18px;font-family:var(--mono);font-size:13px;color:var(--accent);margin:12px 0}
+.condition-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.cond-card{border-radius:10px;padding:16px 18px;border-top:3px solid}
+.cond-card:nth-child(1){background:rgba(192,64,42,0.05);border-color:var(--red)}
+.cond-card:nth-child(2){background:rgba(176,122,16,0.05);border-color:var(--yellow)}
+.cond-card:nth-child(3){background:rgba(108,77,196,0.05);border-color:var(--accent)}
+.cond-card:nth-child(4){background:rgba(42,122,92,0.05);border-color:var(--green)}
+.cond-card h4{margin-top:0;font-size:13px;color:var(--ink)}
+.cond-card p{font-size:12.5px;margin-bottom:0}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.05em;text-transform:uppercase;margin-left:8px}
+.badge.hard{background:rgba(192,64,42,0.12);color:var(--red)}
+.badge.medium{background:rgba(176,122,16,0.12);color:var(--yellow)}
+.badge.easy{background:rgba(42,122,92,0.1);color:var(--green)}
+.scroll-top{position:fixed;bottom:28px;right:28px;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:16px;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(108,77,196,0.35);transition:transform 0.2s}
+.scroll-top:hover{transform:translateY(-2px)}
+@media(max-width:900px){nav{width:0;overflow:hidden}main{margin-left:0;padding:0 24px 80px}.card-grid,.condition-grid,.summary-grid{grid-template-columns:1fr}.progress-bar{left:0}}
+::-webkit-scrollbar{width:6px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-logo">OS Study Guide<span>Lab 8 · Deadlock Management</span></div>
+  <div class="nav-section">Foundation</div>
+  <a href="#intro">What is Deadlock?</a>
+  <a href="#conditions">4 Conditions</a>
+  <a href="#rag">Resource Allocation Graph</a>
+  <div class="nav-section">Algorithms</div>
+  <a href="#avoidance">Deadlock Avoidance</a>
+  <a href="#bankers">Banker's Algorithm</a>
+  <a href="#detection">Deadlock Detection</a>
+  <a href="#recovery">Recovery</a>
+  <div class="nav-section">Practice</div>
+  <a href="#simulator">Live Simulator</a>
+  <a href="#numericals">Numerical Problems</a>
+  <a href="#code">C Code</a>
+  <div class="nav-section">Exam Prep</div>
+  <a href="#mistakes">Common Mistakes</a>
+  <a href="#viva">Viva Questions</a>
+  <a href="#summary">Summary Sheet</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════ HERO -->
+<div class="hero">
+  <div class="hero-badge">📌 Lab 8</div>
+  <h1>Deadlock Management<br>Algorithms</h1>
+  <p>From intuition to exam mastery — Banker's algorithm, deadlock detection, prevention strategies, with interactive simulators and fully-commented C code.</p>
+  <div class="prereq-bar">
+    <span class="prereq-tag before">✓ Study Before: Processes &amp; Threads</span>
+    <span class="prereq-tag before">✓ Study Before: Resource Management</span>
+    <span class="prereq-tag before">✓ Study Before: Semaphores</span>
+    <span class="prereq-tag after">→ Study After: Memory Management (Lab 9)</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ INTRO -->
+<section id="intro">
+  <div class="section-label">Section 1 — Foundation</div>
+  <h2>What is Deadlock?</h2>
+
+  <div class="info-card" style="margin-bottom:20px">
+    <h4>🧠 Real-World Analogy First</h4>
+    <p>Imagine a one-lane bridge. Car A enters from the left. Car B enters from the right. Neither can reverse (they're holding their lane). Both are waiting for the other to move. <strong>Neither can ever proceed.</strong> That is deadlock.</p>
+    <p style="margin-bottom:0">In OS terms: Process P1 holds resource R1 and needs R2. Process P2 holds R2 and needs R1. Circular wait → permanent block.</p>
+  </div>
+
+  <h3>Formal Definition</h3>
+  <p>A set of processes is in deadlock if every process in the set is waiting for an event that can only be caused by another process <em>in the same set</em>. Since all are waiting, none can proceed — ever.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>Process State in Deadlock</h4>
+      <p style="margin:0; font-size:13px">Every process is in the <strong>blocked/waiting</strong> state. No process is running or ready. CPU is idle even though work is queued.</p>
+    </div>
+    <div class="card">
+      <h4>Resources Involved</h4>
+      <p style="margin:0; font-size:13px">Can involve any resource: CPU cycles, memory, I/O devices, files, semaphores, locks — anything that can only be used by one process at a time.</p>
+    </div>
+  </div>
+
+  <h3>Starvation vs Deadlock</h3>
+  <p><strong>Deadlock</strong>: A process will <em>never</em> get the resource. <strong>Starvation</strong>: A process <em>might</em> eventually get the resource but keeps getting skipped. Deadlock is worse — it is permanent.</p>
+</section>
+
+<!-- ══════════════════════════════════════ CONDITIONS -->
+<section id="conditions">
+  <div class="section-label">Section 2 — Foundation</div>
+  <h2>The 4 Necessary Conditions</h2>
+  <p>Deadlock can occur <strong>if and only if</strong> all four of these hold simultaneously. Remove ANY ONE and deadlock is impossible. (These are Coffman's Conditions, 1971.)</p>
+
+  <div class="condition-grid">
+    <div class="cond-card">
+      <h4>1. Mutual Exclusion</h4>
+      <p>At least one resource must be non-sharable. Only one process can use it at a time. Others must wait.</p>
+      <p><em>Example: A printer.</em></p>
+    </div>
+    <div class="cond-card">
+      <h4>2. Hold and Wait</h4>
+      <p>A process holds ≥1 resource AND is waiting to acquire more resources currently held by others.</p>
+      <p><em>Example: P1 holds R1, waits for R2.</em></p>
+    </div>
+    <div class="cond-card">
+      <h4>3. No Preemption</h4>
+      <p>Resources cannot be forcibly taken away. A process only releases a resource voluntarily when done with it.</p>
+      <p><em>Example: You can't grab a file mid-write.</em></p>
+    </div>
+    <div class="cond-card">
+      <h4>4. Circular Wait</h4>
+      <p>A set {P0, P1, …, Pn} where P0 waits for P1, P1 waits for P2, …, Pn waits for P0. A cycle exists.</p>
+      <p><em>Example: P1→R2→P2→R1→P1</em></p>
+    </div>
+  </div>
+
+  <div class="info-card warn">
+    <h4>⚡ Prevention Strategy</h4>
+    <p style="margin-bottom:0">To <strong>prevent</strong> deadlock, you design the system so that at least one condition can never hold:</p>
+    <ul style="margin:8px 0 0; font-size:13px">
+      <li>Break <strong>Mutual Exclusion</strong>: Use sharable resources (read-only files). Often impossible.</li>
+      <li>Break <strong>Hold-and-Wait</strong>: Require all resources at once before starting. Leads to low utilization.</li>
+      <li>Break <strong>No-Preemption</strong>: If a process can't get what it needs, release all it holds. Complex rollback.</li>
+      <li>Break <strong>Circular Wait</strong>: Assign total ordering to resources; processes must request in order. <strong>Most practical!</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ RAG -->
+<section id="rag">
+  <div class="section-label">Section 3 — Foundation</div>
+  <h2>Resource Allocation Graph (RAG)</h2>
+
+  <p>The RAG is the visual tool used to detect and analyze deadlock. Understanding it is essential for exams.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>Nodes</h4>
+      <ul style="font-size:13px; margin:0">
+        <li><strong>Process node (circle)</strong>: Pi</li>
+        <li><strong>Resource node (rectangle)</strong>: Rj with dots = instances</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Edges</h4>
+      <ul style="font-size:13px; margin:0">
+        <li><strong>Request edge</strong>: Pi → Rj (process wants resource)</li>
+        <li><strong>Assignment edge</strong>: Rj → Pi (resource given to process)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The Critical Rule</h3>
+  <div class="card-grid">
+    <div class="info-card danger">
+      <h4>Single Instance Resource Type</h4>
+      <p style="margin:0; font-size:13px">If a cycle exists in the RAG → <strong>DEADLOCK IS CERTAIN</strong>. No exceptions.</p>
+    </div>
+    <div class="info-card success">
+      <h4>Multiple Instance Resource Type</h4>
+      <p style="margin:0; font-size:13px">Cycle exists → <strong>DEADLOCK POSSIBLE but not certain</strong>. Need Banker's algorithm to confirm.</p>
+    </div>
+  </div>
+
+  <h3>Why? Intuition</h3>
+  <p>With single instances, a cycle means A waits for B waits for A — literally no way out. With multiple instances, another copy of the resource might be freed by a process outside the cycle, breaking the wait.</p>
+</section>
+
+<!-- ══════════════════════════════════════ AVOIDANCE -->
+<section id="avoidance">
+  <div class="section-label">Section 4 — Algorithms</div>
+  <h2>Deadlock Avoidance</h2>
+
+  <p>Instead of preventing deadlock by restricting resource usage, <strong>avoidance</strong> allows the OS to dynamically decide: "Should I grant this request right now, or will it lead to deadlock?"</p>
+
+  <div class="info-card" style="margin-bottom:20px">
+    <h4>🏦 The Bank Analogy</h4>
+    <p style="margin-bottom:0">Think of the OS as a bank. Each process is a customer who declares their maximum loan (max resources needed). The bank only lends if it can still serve all customers even in the worst case. A state is "safe" if the bank can always satisfy everyone eventually — even if some customers need to wait.</p>
+  </div>
+
+  <h3>Safe State</h3>
+  <p>A system state is <strong>safe</strong> if there exists a <em>safe sequence</em> — an ordering of all processes such that for each process Pi, the resources Pi still needs can be satisfied by:</p>
+  <div class="formula">Available resources + Resources held by all Pj where j &lt; i</div>
+
+  <div class="card-grid">
+    <div class="info-card success">
+      <h4>Safe State → No Deadlock</h4>
+      <p style="margin:0; font-size:13px">System can always find an ordering to complete all processes. Even if some wait, they will eventually finish.</p>
+    </div>
+    <div class="info-card danger">
+      <h4>Unsafe State → Possible Deadlock</h4>
+      <p style="margin:0; font-size:13px">No safe sequence exists. Deadlock may or may not occur depending on future requests — but we're at risk.</p>
+    </div>
+  </div>
+
+  <div class="info-card warn">
+    <h4>⚠️ Key Insight</h4>
+    <p style="margin-bottom:0">Not all unsafe states lead to deadlock. But the OS refuses to enter unsafe states as a precaution. This is <strong>conservative</strong> — resource utilization suffers, but deadlock is impossible.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ BANKER -->
+<section id="bankers">
+  <div class="section-label">Section 5 — Algorithms</div>
+  <h2>Banker's Algorithm <span class="badge medium">High Exam Weight</span></h2>
+
+  <p>Designed by Dijkstra. Used when there are <strong>multiple instances</strong> of each resource type. It checks if granting a request keeps the system in a safe state.</p>
+
+  <h3>Data Structures</h3>
+  <p>Let <strong>n</strong> = number of processes, <strong>m</strong> = number of resource types.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Structure</th><th>Size</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Available[m]</td><td>m</td><td>Available[j] = number of free instances of resource Rj</td></tr>
+        <tr><td>Max[n][m]</td><td>n × m</td><td>Max[i][j] = max instances of Rj that Pi may ever need</td></tr>
+        <tr><td>Allocation[n][m]</td><td>n × m</td><td>Allocation[i][j] = instances of Rj currently given to Pi</td></tr>
+        <tr><td>Need[n][m]</td><td>n × m</td><td>Need[i][j] = more instances Pi still needs = Max[i][j] − Allocation[i][j]</td></tr>
+        <tr><td>Request[m]</td><td>m</td><td>The current request vector from process Pi</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="formula">Need[i][j] = Max[i][j] − Allocation[i][j]</div>
+
+  <h3>Safety Algorithm</h3>
+  <p>Determines if the current state is safe. Complexity: <strong>O(m × n²)</strong>.</p>
+
+  <div class="tab-bar" id="tabs1">
+    <button class="tab-btn active" onclick="switchTab('tabs1','pseudo')">Pseudocode</button>
+    <button class="tab-btn" onclick="switchTab('tabs1','steps')">Step-by-Step</button>
+  </div>
+  <div class="card" style="border-radius:0 12px 12px 12px; margin-top:0;">
+    <div class="tab-content active" id="tabs1-pseudo">
+<div class="code-wrap"><span class="code-label">PSEUDOCODE</span>
+<pre><span class="cm">// Safety Algorithm: returns true if system is in safe state</span>
+<span class="kw">function</span> <span class="fn">isSafe</span>(Available, Allocation, Need, n, m):
+    Work[m]  ← Available           <span class="cm">// work = copy of available</span>
+    Finish[n] ← {<span class="kw">false</span>, ..., <span class="kw">false</span>}  <span class="cm">// no process finished yet</span>
+    
+    <span class="kw">loop</span>:
+        found ← <span class="kw">false</span>
+        <span class="kw">for</span> i = 0 <span class="kw">to</span> n-1:
+            <span class="kw">if</span> Finish[i] == <span class="kw">false</span> AND Need[i] ≤ Work:
+                Work  ← Work + Allocation[i]  <span class="cm">// Pi finishes, releases resources</span>
+                Finish[i] ← <span class="kw">true</span>
+                found ← <span class="kw">true</span>
+                record i in safe_sequence
+        <span class="kw">if not</span> found: <span class="kw">break</span>
+    
+    <span class="kw">if</span> all Finish[i] == <span class="kw">true</span>: <span class="kw">return</span> SAFE + safe_sequence
+    <span class="kw">else</span>: <span class="kw">return</span> UNSAFE</pre></div>
+    </div>
+    <div class="tab-content" id="tabs1-steps">
+      <ol class="algo-steps">
+        <li><strong>Initialise</strong>: Work = Available. Finish[i] = false for all i.</li>
+        <li><strong>Find eligible process</strong>: Look for any i where Finish[i] = false AND Need[i] ≤ Work. (Process can complete with available resources.)</li>
+        <li><strong>Simulate completion</strong>: Set Work = Work + Allocation[i]. Set Finish[i] = true. Add i to safe sequence. Go back to step 2.</li>
+        <li><strong>Check result</strong>: If all Finish[i] = true → SAFE STATE. If any Finish[i] = false → UNSAFE STATE (those processes are deadlocked).</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>Resource-Request Algorithm</h3>
+  <p>Called when process Pi makes a request. Only grants if system stays safe.</p>
+
+  <div class="code-wrap"><span class="code-label">PSEUDOCODE</span>
+<pre><span class="kw">function</span> <span class="fn">requestResources</span>(i, Request):
+    <span class="cm">// Step 1: Request must not exceed declared need</span>
+    <span class="kw">if</span> Request[i] > Need[i]:
+        error(<span class="str">"Process exceeded maximum claim!"</span>)
+    
+    <span class="cm">// Step 2: Resources must be available right now</span>
+    <span class="kw">if</span> Request[i] > Available:
+        wait()  <span class="cm">// resources not available, Pi must block</span>
+    
+    <span class="cm">// Step 3: Pretend to allocate, then check safety</span>
+    Available  ← Available  - Request[i]
+    Allocation[i] ← Allocation[i] + Request[i]
+    Need[i]    ← Need[i]    - Request[i]
+    
+    <span class="kw">if</span> <span class="fn">isSafe</span>():
+        <span class="cm">// Allocation is committed — Pi gets resources</span>
+        <span class="kw">return</span> GRANTED
+    <span class="kw">else</span>:
+        <span class="cm">// Roll back — state was unsafe</span>
+        Available  ← Available  + Request[i]
+        Allocation[i] ← Allocation[i] - Request[i]
+        Need[i]    ← Need[i]    + Request[i]
+        wait()</pre></div>
+</section>
+
+<!-- ══════════════════════════════════════ SIMULATOR -->
+<section id="simulator">
+  <div class="section-label">Section 6 — Interactive</div>
+  <h2>Live Banker's Algorithm Simulator</h2>
+  <p>This is the <strong>exact example from your lab manual</strong>. Resources A, B, C with totals 10, 5, 7. Modify the matrices and click Run Safety Check.</p>
+
+  <div class="sim-container">
+    <div class="sim-title">⚙️ Banker's Algorithm – Safety Check</div>
+
+    <div style="margin-bottom:16px; font-size:13px; color:var(--text2)">
+      Total instances: A=<strong style="color:var(--accent)">10</strong>, B=<strong style="color:var(--accent)">5</strong>, C=<strong style="color:var(--accent)">7</strong>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:20px">
+      <div>
+        <div class="matrix-label">Allocation (A B C)</div>
+        <table class="matrix-table">
+          <tr><th></th><th>A</th><th>B</th><th>C</th></tr>
+          <tr><td>P0</td><td><input id="al00" value="0"></td><td><input id="al01" value="1"></td><td><input id="al02" value="0"></td></tr>
+          <tr><td>P1</td><td><input id="al10" value="2"></td><td><input id="al11" value="0"></td><td><input id="al12" value="0"></td></tr>
+          <tr><td>P2</td><td><input id="al20" value="3"></td><td><input id="al21" value="0"></td><td><input id="al22" value="2"></td></tr>
+          <tr><td>P3</td><td><input id="al30" value="2"></td><td><input id="al31" value="1"></td><td><input id="al32" value="1"></td></tr>
+          <tr><td>P4</td><td><input id="al40" value="0"></td><td><input id="al41" value="0"></td><td><input id="al42" value="2"></td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="matrix-label">Max (A B C)</div>
+        <table class="matrix-table">
+          <tr><th></th><th>A</th><th>B</th><th>C</th></tr>
+          <tr><td>P0</td><td><input id="mx00" value="7"></td><td><input id="mx01" value="5"></td><td><input id="mx02" value="3"></td></tr>
+          <tr><td>P1</td><td><input id="mx10" value="3"></td><td><input id="mx11" value="2"></td><td><input id="mx12" value="2"></td></tr>
+          <tr><td>P2</td><td><input id="mx20" value="9"></td><td><input id="mx21" value="0"></td><td><input id="mx22" value="2"></td></tr>
+          <tr><td>P3</td><td><input id="mx30" value="2"></td><td><input id="mx31" value="2"></td><td><input id="mx32" value="2"></td></tr>
+          <tr><td>P4</td><td><input id="mx40" value="4"></td><td><input id="mx41" value="3"></td><td><input id="mx42" value="3"></td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="matrix-label">Available (A B C)</div>
+        <table class="matrix-table">
+          <tr><th>A</th><th>B</th><th>C</th></tr>
+          <tr><td><input id="av0" value="3"></td><td><input id="av1" value="3"></td><td><input id="av2" value="2"></td></tr>
+        </table>
+        <div style="margin-top:20px">
+        <div class="matrix-label">Request for Process:</div>
+        <table class="matrix-table">
+          <tr><th>P#</th><th>A</th><th>B</th><th>C</th></tr>
+          <tr>
+            <td><input id="rp" value="1" style="width:32px"></td>
+            <td><input id="rq0" value="1"></td>
+            <td><input id="rq1" value="0"></td>
+            <td><input id="rq2" value="2"></td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <button class="sim-btn primary" onclick="runSafety()">▶ Run Safety Check</button>
+    <button class="sim-btn secondary" onclick="runRequest()">↩ Check Request</button>
+    <button class="sim-btn secondary" onclick="resetSim()">↺ Reset</button>
+
+    <div class="sim-output" id="simOut"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ NUMERICALS -->
+<section id="numericals">
+  <div class="section-label">Section 7 — Practice</div>
+  <h2>Numerical Problems (Step-by-Step)</h2>
+
+  <h3>Problem 1 — Safety Check (Lab Manual Example) <span class="badge hard">Exam Favourite</span></h3>
+  <p>From your manual: Processes P0–P4, Resources A (10), B (5), C (7).</p>
+
+  <h4>Given Data</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Process</th><th>Alloc A</th><th>Alloc B</th><th>Alloc C</th><th>Max A</th><th>Max B</th><th>Max C</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>0</td><td>1</td><td>0</td><td>7</td><td>5</td><td>3</td></tr>
+        <tr><td>P1</td><td>2</td><td>0</td><td>0</td><td>3</td><td>2</td><td>2</td></tr>
+        <tr><td>P2</td><td>3</td><td>0</td><td>2</td><td>9</td><td>0</td><td>2</td></tr>
+        <tr><td>P3</td><td>2</td><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td></tr>
+        <tr><td>P4</td><td>0</td><td>0</td><td>2</td><td>4</td><td>3</td><td>3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Available = A:3, B:3, C:2</strong> (Total − Sum of Allocations = [10,5,7] − [7,2,5] = [3,3,2])</p>
+
+  <h4>(a) Need Matrix = Max − Allocation</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Process</th><th>Need A</th><th>Need B</th><th>Need C</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>7</td><td>4</td><td>3</td></tr>
+        <tr><td>P1</td><td>1</td><td>2</td><td>2</td></tr>
+        <tr><td>P2</td><td>6</td><td>0</td><td>0</td></tr>
+        <tr><td>P3</td><td>0</td><td>1</td><td>1</td></tr>
+        <tr><td>P4</td><td>4</td><td>3</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>(b) Safety Algorithm Trace</h4>
+  <div class="card">
+    <p style="font-family:var(--mono); font-size:12.5px; margin-bottom:4px; color:var(--text2)">Initial Work = [3, 3, 2]</p>
+    <div class="table-wrap" style="margin:0">
+      <table>
+        <thead><tr><th>Step</th><th>Check</th><th>Need ≤ Work?</th><th>Work after release</th><th>Finish</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row"><td>1</td><td>P1 Need=[1,2,2] ≤ [3,3,2]</td><td>✓ YES</td><td>[3,3,2]+[2,0,0] = [5,3,2]</td><td>P1 ✓</td></tr>
+          <tr class="highlight-row"><td>2</td><td>P3 Need=[0,1,1] ≤ [5,3,2]</td><td>✓ YES</td><td>[5,3,2]+[2,1,1] = [7,4,3]</td><td>P3 ✓</td></tr>
+          <tr class="highlight-row"><td>3</td><td>P4 Need=[4,3,1] ≤ [7,4,3]</td><td>✓ YES</td><td>[7,4,3]+[0,0,2] = [7,4,5]</td><td>P4 ✓</td></tr>
+          <tr class="highlight-row"><td>4</td><td>P0 Need=[7,4,3] ≤ [7,4,5]</td><td>✓ YES</td><td>[7,4,5]+[0,1,0] = [7,5,5]</td><td>P0 ✓</td></tr>
+          <tr class="highlight-row"><td>5</td><td>P2 Need=[6,0,0] ≤ [7,5,5]</td><td>✓ YES</td><td>[7,5,5]+[3,0,2] = [10,5,7]</td><td>P2 ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--green); font-family:var(--mono); margin:12px 0 0; font-size:13px">✅ SAFE STATE! Safe Sequence: &lt;P1, P3, P4, P0, P2&gt;</p>
+  </div>
+
+  <h4>(c) Can P1's Request (1,0,2) be granted?</h4>
+  <ol style="font-size:13.5px; color:var(--text2); margin-bottom:16px">
+    <li>Check: Request[1]=[1,0,2] ≤ Need[1]=[1,2,2]? → [1≤1, 0≤2, 2≤2] → ✓</li>
+    <li>Check: Request[1]=[1,0,2] ≤ Available=[3,3,2]? → [1≤3, 0≤3, 2≤2] → ✓</li>
+    <li>Pretend to allocate: Available=[3,3,2]−[1,0,2]=[2,3,0]. Allocation[1]=[3,0,2]. Need[1]=[0,2,0].</li>
+    <li>Run safety check on new state → SAFE → <strong style="color:var(--green)">REQUEST GRANTED</strong></li>
+  </ol>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Matrix</th><th>A</th><th>B</th><th>C</th></tr></thead>
+      <tbody>
+        <tr><td>Available (updated)</td><td>2</td><td>3</td><td>0</td></tr>
+        <tr><td>Allocation[P1] (updated)</td><td>3</td><td>0</td><td>2</td></tr>
+        <tr><td>Need[P1] (updated)</td><td>0</td><td>2</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>(d) Can P4's Request (3,3,0) be granted?</h4>
+  <div class="info-card danger">
+    <p style="margin:0; font-size:13px">Check: Request[4]=[3,3,0] ≤ Available=[3,3,2]? → ✓<br>
+    But after pretend-allocation, run safety algorithm → <strong>No safe sequence found</strong>.<br>
+    → <strong style="color:var(--red)">REQUEST DENIED. Pi must wait.</strong></p>
+  </div>
+
+  <h4>(e) Can P0's Request (0,2,0) be granted?</h4>
+  <div class="info-card success">
+    <p style="margin:0; font-size:13px">Request ≤ Need? [0,2,0] ≤ [7,4,3] → ✓. Request ≤ Available? [0,2,0] ≤ [3,3,2] → ✓.<br>
+    After pretend-allocation, safety check passes → <strong style="color:var(--green)">REQUEST GRANTED.</strong></p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ DETECTION -->
+<section id="detection">
+  <div class="section-label">Section 8 — Algorithms</div>
+  <h2>Deadlock Detection Algorithm</h2>
+
+  <p>Unlike avoidance (which prevents unsafe states), detection <strong>allows deadlocks to happen</strong> and then detects them. Used when overhead of avoidance is too high.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>Data Structures</h4>
+      <ul style="font-size:13px; margin:0">
+        <li><strong>Available[m]</strong>: free resource instances</li>
+        <li><strong>Allocation[n][m]</strong>: currently allocated</li>
+        <li><strong>Request[n][m]</strong>: current outstanding requests</li>
+        <li>(No Max / Need — we don't know maximum demands)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>When to Invoke?</h4>
+      <ul style="font-size:13px; margin:0">
+        <li>Every time a request cannot be granted immediately</li>
+        <li>Periodically (every hour, every N allocations)</li>
+        <li>When CPU utilization drops below threshold</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Detection Algorithm</h3>
+  <p>Very similar to Safety Algorithm, but uses <strong>Request</strong> instead of Need.</p>
+
+  <div class="code-wrap"><span class="code-label">PSEUDOCODE</span>
+<pre><span class="kw">function</span> <span class="fn">detectDeadlock</span>(Available, Allocation, Request, n, m):
+    Work[m]  ← Available
+    <span class="kw">for</span> i = 0 <span class="kw">to</span> n-1:
+        <span class="cm">// Processes with no allocations are trivially "finished"</span>
+        Finish[i] ← (Allocation[i] == 0) ? <span class="kw">true</span> : <span class="kw">false</span>
+    
+    <span class="kw">loop</span>:
+        found ← <span class="kw">false</span>
+        <span class="kw">for</span> i = 0 <span class="kw">to</span> n-1:
+            <span class="kw">if</span> Finish[i] == <span class="kw">false</span> AND Request[i] ≤ Work:
+                Work ← Work + Allocation[i]
+                Finish[i] ← <span class="kw">true</span>
+                found ← <span class="kw">true</span>
+        <span class="kw">if not</span> found: <span class="kw">break</span>
+    
+    deadlocked = {i | Finish[i] == <span class="kw">false</span>}
+    <span class="kw">if</span> deadlocked is empty: <span class="kw">return</span> NO_DEADLOCK
+    <span class="kw">else</span>: <span class="kw">return</span> DEADLOCK, deadlocked</pre></div>
+
+  <h3>Lab Manual Problem 2 — Detection Example</h3>
+  <p>Processes P0–P4. Available = [0,0,0]. (No free resources.)</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Process</th><th>Alloc A B C</th><th>Request A B C</th></tr></thead>
+      <tbody>
+        <tr><td>P0</td><td>0 1 0</td><td>0 0 0</td></tr>
+        <tr><td>P1</td><td>2 0 0</td><td>2 0 2</td></tr>
+        <tr><td>P2</td><td>3 0 3</td><td>0 0 0</td></tr>
+        <tr><td>P3</td><td>2 1 1</td><td>1 0 0</td></tr>
+        <tr><td>P4</td><td>0 0 2</td><td>0 0 2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <p style="font-family:var(--mono); font-size:12.5px; color:var(--text2); margin-bottom:8px">Work = [0,0,0]. Finish = [F,F,F,F,F] (all have allocations)</p>
+    <ol style="font-size:13px; color:var(--text2)">
+      <li>P0: Request=[0,0,0] ≤ Work=[0,0,0] → ✓. Work=[0,1,0]+Alloc[0]=[0,1,0]. Finish[0]=T</li>
+      <li>P2: Request=[0,0,0] ≤ Work=[0,1,0] → ✓. Work=[0,1,0]+[3,0,3]=[3,1,3]. Finish[2]=T</li>
+      <li>P3: Request=[1,0,0] ≤ Work=[3,1,3] → ✓. Work=[3,1,3]+[2,1,1]=[5,2,4]. Finish[3]=T</li>
+      <li>P1: Request=[2,0,2] ≤ Work=[5,2,4] → ✓. Work=[5,2,4]+[2,0,0]=[7,2,4]. Finish[1]=T</li>
+      <li>P4: Request=[0,0,2] ≤ Work=[7,2,4] → ✓. Finish[4]=T</li>
+    </ol>
+    <p style="color:var(--green); font-family:var(--mono); margin-top:10px; font-size:13px">✅ No deadlock! All processes can finish.</p>
+  </div>
+
+  <div class="info-card warn" style="margin-top:16px">
+    <h4>If P2 requests 1 more C:</h4>
+    <p style="margin-bottom:0; font-size:13px">Request[P2] becomes [0,0,1]. With Work=[0,0,0], only P0 can proceed (request=[0,0,0]). After P0: Work=[0,1,0]. No other process has Request ≤ [0,1,0]. <strong style="color:var(--red)">P1, P2, P3, P4 are deadlocked!</strong></p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ RECOVERY -->
+<section id="recovery">
+  <div class="section-label">Section 9 — Algorithms</div>
+  <h2>Deadlock Recovery</h2>
+  <p>Once deadlock is detected, the system must recover. Two main approaches:</p>
+
+  <div class="card-grid">
+    <div class="info-card danger">
+      <h4>1. Process Termination</h4>
+      <ul style="font-size:13px; margin:0">
+        <li><strong>Abort all deadlocked processes</strong>: Drastic, immediate. All work lost.</li>
+        <li><strong>Abort one at a time</strong>: Kill cheapest process, re-run detection, repeat until no deadlock. Less loss, more overhead.</li>
+      </ul>
+    </div>
+    <div class="info-card warn">
+      <h4>2. Resource Preemption</h4>
+      <ul style="font-size:13px; margin:0">
+        <li><strong>Selecting a victim</strong>: Which process/resource to preempt? Minimize cost.</li>
+        <li><strong>Rollback</strong>: Roll process back to a safe state and restart it.</li>
+        <li><strong>Starvation risk</strong>: Same process always picked as victim? Must limit rollback count.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Victim Selection Criteria</h3>
+  <ul>
+    <li>Process priority (kill lowest priority first)</li>
+    <li>How long the process has been running</li>
+    <li>Resources used / resources still needed</li>
+    <li>Number of processes that need to be terminated</li>
+    <li>Is the process interactive or batch?</li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════ CODE -->
+<section id="code">
+  <div class="section-label">Section 10 — Implementation</div>
+  <h2>C Code Implementation</h2>
+
+  <div class="tab-bar" id="ctabs">
+    <button class="tab-btn active" onclick="switchTab('ctabs','bankers_c')">Banker's Algorithm</button>
+    <button class="tab-btn" onclick="switchTab('ctabs','detect_c')">Deadlock Detection</button>
+  </div>
+
+  <div class="card" style="border-radius:0 12px 12px 12px; margin-top:0; padding:0; overflow:hidden;">
+    <div class="tab-content active" id="ctabs-bankers_c">
+<div class="code-wrap"><span class="code-label">C</span>
+<pre><span class="cm">/*
+ * Banker's Algorithm for Deadlock Avoidance
+ * Implements Safety Check + Resource-Request Algorithm
+ * Matches Lab Manual Example: 5 processes, 3 resource types (A,B,C)
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdbool.h&gt;</span>
+
+<span class="kw">#define</span> <span class="var">MAX_P</span> <span class="num">10</span>   <span class="cm">/* max processes */</span>
+<span class="kw">#define</span> <span class="var">MAX_R</span> <span class="num">10</span>   <span class="cm">/* max resource types */</span>
+
+<span class="type">int</span> n, m;                          <span class="cm">/* n=processes, m=resource types */</span>
+<span class="type">int</span> available[MAX_R];
+<span class="type">int</span> maximum[MAX_P][MAX_R];
+<span class="type">int</span> allocation[MAX_P][MAX_R];
+<span class="type">int</span> need[MAX_P][MAX_R];
+
+<span class="cm">/* Compute Need = Max - Allocation for all processes */</span>
+<span class="kw">void</span> <span class="fn">computeNeed</span>() {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+            need[i][j] = maximum[i][j] - allocation[i][j];
+}
+
+<span class="cm">/* Check if vector a &lt;= vector b (component-wise) */</span>
+<span class="type">bool</span> <span class="fn">vecLeq</span>(<span class="type">int</span> a[], <span class="type">int</span> b[]) {
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+        <span class="kw">if</span> (a[j] > b[j]) <span class="kw">return false</span>;
+    <span class="kw">return true</span>;
+}
+
+<span class="cm">/* Safety Algorithm: returns true if safe, fills safeSeq[] */</span>
+<span class="type">bool</span> <span class="fn">isSafe</span>(<span class="type">int</span> safeSeq[]) {
+    <span class="type">int</span>  work[MAX_R];
+    <span class="type">bool</span> finish[MAX_P] = {<span class="kw">false</span>};
+
+    <span class="cm">/* Step 1: Initialize Work = Available */</span>
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+        work[j] = available[j];
+
+    <span class="type">int</span> count = <span class="num">0</span>;
+
+    <span class="cm">/* Step 2 & 3: Find eligible processes and simulate */</span>
+    <span class="kw">while</span> (count &lt; n) {
+        <span class="type">bool</span> found = <span class="kw">false</span>;
+        <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+            <span class="kw">if</span> (!finish[i] &amp;&amp; <span class="fn">vecLeq</span>(need[i], work)) {
+                <span class="cm">/* Pi can complete — simulate it releasing resources */</span>
+                <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+                    work[j] += allocation[i][j];  <span class="cm">/* release Pi's resources */</span>
+                finish[i] = <span class="kw">true</span>;
+                safeSeq[count++] = i;
+                found = <span class="kw">true</span>;
+            }
+        }
+        <span class="kw">if</span> (!found) <span class="kw">break</span>;  <span class="cm">/* no eligible process found — unsafe */</span>
+    }
+
+    <span class="cm">/* Step 4: All finished = safe state */</span>
+    <span class="kw">return</span> count == n;
+}
+
+<span class="cm">/* Resource-Request Algorithm for process pid */</span>
+<span class="type">void</span> <span class="fn">requestResources</span>(<span class="type">int</span> pid, <span class="type">int</span> request[]) {
+    printf(<span class="str">"\n--- Request from P%d ---\n"</span>, pid);
+
+    <span class="cm">/* Check 1: Request must not exceed declared need */</span>
+    <span class="kw">if</span> (!<span class="fn">vecLeq</span>(request, need[pid])) {
+        printf(<span class="str">"ERROR: Request exceeds maximum claim!\n"</span>);
+        <span class="kw">return</span>;
+    }
+
+    <span class="cm">/* Check 2: Resources must be available now */</span>
+    <span class="kw">if</span> (!<span class="fn">vecLeq</span>(request, available)) {
+        printf(<span class="str">"Wait: Resources unavailable. P%d must block.\n"</span>, pid);
+        <span class="kw">return</span>;
+    }
+
+    <span class="cm">/* Check 3: Pretend to allocate and test safety */</span>
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++) {
+        available[j]       -= request[j];
+        allocation[pid][j] += request[j];
+        need[pid][j]       -= request[j];
+    }
+
+    <span class="type">int</span> seq[MAX_P];
+    <span class="kw">if</span> (<span class="fn">isSafe</span>(seq)) {
+        printf(<span class="str">"GRANTED! New Available: "</span>);
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+            printf(<span class="str">"%d "</span>, available[j]);
+        printf(<span class="str">"\nSafe sequence: &lt;"</span>);
+        <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+            printf(<span class="str">"P%d%s"</span>, seq[i], i==n-<span class="num">1</span>?<span class="str">""</span>:<span class="str">","</span>);
+        printf(<span class="str">"&gt;\n"</span>);
+    } <span class="kw">else</span> {
+        <span class="cm">/* Roll back — would make system unsafe */</span>
+        printf(<span class="str">"DENIED: Would cause unsafe state. Rolling back.\n"</span>);
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++) {
+            available[j]       += request[j];
+            allocation[pid][j] -= request[j];
+            need[pid][j]       += request[j];
+        }
+    }
+}
+
+<span class="kw">void</span> <span class="fn">printMatrices</span>() {
+    printf(<span class="str">"\n%-8s%-18s%-18s%-18s\n"</span>,
+        <span class="str">"Proc"</span>, <span class="str">"Allocation"</span>, <span class="str">"Max"</span>, <span class="str">"Need"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        printf(<span class="str">"P%-7d"</span>, i);
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++) printf(<span class="str">"%d "</span>, allocation[i][j]);
+        printf(<span class="str">"         "</span>);
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++) printf(<span class="str">"%d "</span>, maximum[i][j]);
+        printf(<span class="str">"         "</span>);
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++) printf(<span class="str">"%d "</span>, need[i][j]);
+        printf(<span class="str">"\n"</span>);
+    }
+    printf(<span class="str">"Available: "</span>);
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++) printf(<span class="str">"%d "</span>, available[j]);
+    printf(<span class="str">"\n"</span>);
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="cm">/* Lab manual example */</span>
+    n = <span class="num">5</span>; m = <span class="num">3</span>;
+
+    <span class="type">int</span> alloc[<span class="num">5</span>][<span class="num">3</span>] = {{<span class="num">0,1,0</span>},{<span class="num">2,0,0</span>},{<span class="num">3,0,2</span>},{<span class="num">2,1,1</span>},{<span class="num">0,0,2</span>}};
+    <span class="type">int</span> max_r[<span class="num">5</span>][<span class="num">3</span>] = {{<span class="num">7,5,3</span>},{<span class="num">3,2,2</span>},{<span class="num">9,0,2</span>},{<span class="num">2,2,2</span>},{<span class="num">4,3,3</span>}};
+    <span class="type">int</span> avail[<span class="num">3</span>]    = {<span class="num">3,3,2</span>};
+
+    <span class="kw">for</span> (<span class="type">int</span> i=<span class="num">0</span>; i&lt;n; i++)
+        <span class="kw">for</span> (<span class="type">int</span> j=<span class="num">0</span>; j&lt;m; j++) {
+            allocation[i][j] = alloc[i][j];
+            maximum[i][j]    = max_r[i][j];
+            available[j]     = avail[j];
+        }
+
+    <span class="fn">computeNeed</span>();
+    <span class="fn">printMatrices</span>();
+
+    <span class="type">int</span> safeSeq[MAX_P];
+    <span class="kw">if</span> (<span class="fn">isSafe</span>(safeSeq)) {
+        printf(<span class="str">"\nSystem is in SAFE STATE\nSafe Sequence: &lt;"</span>);
+        <span class="kw">for</span> (<span class="type">int</span> i=<span class="num">0</span>; i&lt;n; i++)
+            printf(<span class="str">"P%d%s"</span>, safeSeq[i], i==n-<span class="num">1</span>?<span class="str">""</span>:<span class="str">","</span>);
+        printf(<span class="str">"&gt;\n"</span>);
+    } <span class="kw">else</span> {
+        printf(<span class="str">"\nSystem is in UNSAFE STATE!\n"</span>);
+    }
+
+    <span class="cm">/* Test request from P1: (1,0,2) */</span>
+    <span class="type">int</span> req1[] = {<span class="num">1,0,2</span>};
+    <span class="fn">requestResources</span>(<span class="num">1</span>, req1);
+
+    <span class="cm">/* Test request from P4: (3,3,0) */</span>
+    <span class="type">int</span> req4[] = {<span class="num">3,3,0</span>};
+    <span class="fn">requestResources</span>(<span class="num">4</span>, req4);
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+
+    <div class="tab-content" id="ctabs-detect_c">
+<div class="code-wrap"><span class="code-label">C</span>
+<pre><span class="cm">/*
+ * Deadlock Detection Algorithm
+ * No Max/Need matrices — processes make ad-hoc requests
+ * Detects which processes are deadlocked
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdbool.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="kw">#define</span> <span class="var">MAX_P</span> <span class="num">10</span>
+<span class="kw">#define</span> <span class="var">MAX_R</span> <span class="num">10</span>
+
+<span class="type">int</span> n, m;
+<span class="type">int</span> available[MAX_R];
+<span class="type">int</span> allocation[MAX_P][MAX_R];
+<span class="type">int</span> request_mat[MAX_P][MAX_R];  <span class="cm">/* current outstanding requests */</span>
+
+<span class="type">bool</span> <span class="fn">vecLeq</span>(<span class="type">int</span> a[], <span class="type">int</span> b[]) {
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+        <span class="kw">if</span> (a[j] > b[j]) <span class="kw">return false</span>;
+    <span class="kw">return true</span>;
+}
+
+<span class="type">bool</span> <span class="fn">isZeroRow</span>(<span class="type">int</span> row[]) {
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+        <span class="kw">if</span> (row[j] != <span class="num">0</span>) <span class="kw">return false</span>;
+    <span class="kw">return true</span>;
+}
+
+<span class="kw">void</span> <span class="fn">detectDeadlock</span>() {
+    <span class="type">int</span>  work[MAX_R];
+    <span class="type">bool</span> finish[MAX_P];
+
+    <span class="cm">/* Init: work = available */</span>
+    <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+        work[j] = available[j];
+
+    <span class="cm">/* Init finish[i]: true if no allocation (trivially done) */</span>
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        finish[i] = <span class="fn">isZeroRow</span>(allocation[i]);
+
+    <span class="cm">/* Find completable processes */</span>
+    <span class="type">bool</span> changed = <span class="kw">true</span>;
+    <span class="kw">while</span> (changed) {
+        changed = <span class="kw">false</span>;
+        <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+            <span class="kw">if</span> (!finish[i] &amp;&amp; <span class="fn">vecLeq</span>(request_mat[i], work)) {
+                <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; m; j++)
+                    work[j] += allocation[i][j];
+                finish[i] = <span class="kw">true</span>;
+                changed = <span class="kw">true</span>;
+                printf(<span class="str">"  P%d can complete (Request ≤ Work)\n"</span>, i);
+            }
+        }
+    }
+
+    <span class="cm">/* Report results */</span>
+    <span class="type">bool</span> deadlock = <span class="kw">false</span>;
+    printf(<span class="str">"\n=== DEADLOCK DETECTION RESULT ===\n"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="kw">if</span> (!finish[i]) {
+            printf(<span class="str">"DEADLOCKED: P%d\n"</span>, i);
+            deadlock = <span class="kw">true</span>;
+        }
+    }
+    <span class="kw">if</span> (!deadlock) printf(<span class="str">"No deadlock detected.\n"</span>);
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    n = <span class="num">5</span>; m = <span class="num">3</span>;
+
+    <span class="cm">/* Lab manual Example 2 data */</span>
+    <span class="type">int</span> alloc[<span class="num">5</span>][<span class="num">3</span>]   = {{<span class="num">0,1,0</span>},{<span class="num">2,0,0</span>},{<span class="num">3,0,3</span>},{<span class="num">2,1,1</span>},{<span class="num">0,0,2</span>}};
+    <span class="type">int</span> req[<span class="num">5</span>][<span class="num">3</span>]     = {{<span class="num">0,0,0</span>},{<span class="num">2,0,2</span>},{<span class="num">0,0,0</span>},{<span class="num">1,0,0</span>},{<span class="num">0,0,2</span>}};
+    <span class="type">int</span> avail[<span class="num">3</span>]      = {<span class="num">0,0,0</span>};
+
+    <span class="kw">for</span> (<span class="type">int</span> i=<span class="num">0</span>; i&lt;n; i++)
+        <span class="kw">for</span> (<span class="type">int</span> j=<span class="num">0</span>; j&lt;m; j++) {
+            allocation[i][j]  = alloc[i][j];
+            request_mat[i][j] = req[i][j];
+        }
+    <span class="kw">for</span> (<span class="type">int</span> j=<span class="num">0</span>; j&lt;m; j++)
+        available[j] = avail[j];
+
+    printf(<span class="str">"Running detection...\n"</span>);
+    <span class="fn">detectDeadlock</span>();
+
+    <span class="cm">/* Part (b): P2 requests 1 more C */</span>
+    printf(<span class="str">"\n--- P2 requests 1 more C ---\n"</span>);
+    request_mat[<span class="num">2</span>][<span class="num">2</span>] = <span class="num">1</span>;
+    printf(<span class="str">"Re-running detection...\n"</span>);
+    <span class="fn">detectDeadlock</span>();
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ MISTAKES -->
+<section id="mistakes">
+  <div class="section-label">Section 11 — Exam Prep</div>
+  <h2>Common Mistakes</h2>
+
+  <div class="mistake">
+    <div class="mistake-icon">✗</div>
+    <div>
+      <strong>Confusing Avoidance vs Detection</strong><br>
+      <span style="font-size:13px; color:var(--text2)">Avoidance prevents unsafe states BEFORE they happen. Detection finds deadlocks AFTER they occur. Many students mix up which uses Need vs Request matrices.</span>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">✗</div>
+    <div>
+      <strong>Forgetting the "Pretend" Step in Request Algorithm</strong><br>
+      <span style="font-size:13px; color:var(--text2)">You must actually modify Available, Allocation, Need — then run safety check. If unsafe, ROLL BACK all three. Students forget the rollback.</span>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">✗</div>
+    <div>
+      <strong>Need Matrix in Detection Algorithm</strong><br>
+      <span style="font-size:13px; color:var(--text2)">Detection does NOT use Need or Max. It uses the actual outstanding Request matrix. Detection algo uses Request ≤ Work (not Need ≤ Work).</span>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon fix-icon">✓</div>
+    <div>
+      <strong>Safe sequence is not unique</strong><br>
+      <span style="font-size:13px; color:var(--text2)">Multiple safe sequences may exist. Any valid one is acceptable as the answer. P1,P3,P4,P0,P2 and P3,P1,P2,P4,P0 can both be correct.</span>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">✗</div>
+    <div>
+      <strong>Cycle in RAG = Deadlock (Wrong!)</strong><br>
+      <span style="font-size:13px; color:var(--text2)">Only true for single-instance resources. With multiple instances, a cycle is necessary but not sufficient for deadlock. Use detection algorithm to confirm.</span>
+    </div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-icon">✗</div>
+    <div>
+      <strong>Available computed wrong</strong><br>
+      <span style="font-size:13px; color:var(--text2)">Available = Total − Σ(Allocation for all processes). Students often forget to subtract ALL allocations, or use Max instead of Allocation.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ VIVA -->
+<section id="viva">
+  <div class="section-label">Section 12 — Exam Prep</div>
+  <h2>Viva / Exam Questions</h2>
+
+  <h3>Short Answer</h3>
+  <div id="qa-short">
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What are the four necessary conditions for deadlock? <span class="chevron">▾</span></div>
+      <div class="qa-a">Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. ALL four must hold simultaneously for deadlock to occur.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is the difference between a safe and unsafe state? <span class="chevron">▾</span></div>
+      <div class="qa-a">A <strong>safe state</strong> guarantees there exists at least one safe sequence — an order of processes that can all complete without deadlock. An <strong>unsafe state</strong> means no such sequence exists, meaning deadlock is possible (though not guaranteed) based on future requests.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is Need[i][j] in Banker's Algorithm? <span class="chevron">▾</span></div>
+      <div class="qa-a"><code>Need[i][j] = Max[i][j] - Allocation[i][j]</code>. It represents how many more instances of resource Rj process Pi may still request before it completes.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">Why can't Banker's Algorithm be used in practice easily? <span class="chevron">▾</span></div>
+      <div class="qa-a">It requires processes to declare their maximum resource needs IN ADVANCE. In practice, processes rarely know this ahead of time. Also, the number of processes and resources must be fixed — both change dynamically in real systems.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is the time complexity of the Safety Algorithm? <span class="chevron">▾</span></div>
+      <div class="qa-a">O(m × n²) — for each of the n processes, we may need to scan all n processes in the worst case, and comparing vectors takes O(m).</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px">Long Answer / Trick Questions</h3>
+  <div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">🎯 TRICK: Can an unsafe state lead to no deadlock? <span class="chevron">▾</span></div>
+      <div class="qa-a"><strong>YES!</strong> This is a key trick question. An unsafe state means deadlock is POSSIBLE, not certain. If processes happen to release resources in the right order, deadlock may never occur. The OS avoids unsafe states as a <em>conservative</em> precaution. The implication is one way: Safe → No deadlock. But Unsafe → MAYBE deadlock.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">🎯 TRICK: Is deadlock avoidance better than deadlock prevention? <span class="chevron">▾</span></div>
+      <div class="qa-a"><strong>Not always!</strong> Avoidance (Banker's) gives better resource utilization than many prevention strategies but requires advance knowledge of max demands. Prevention via resource ordering (break circular wait) is simpler and has no runtime overhead. The "better" choice depends on context — real-time systems prefer prevention; database systems may prefer detection+recovery.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">🎯 Explain why Windows/Linux don't use Banker's Algorithm <span class="chevron">▾</span></div>
+      <div class="qa-a">Three reasons: (1) Requires all processes to declare max resources upfront — impractical. (2) Number of processes and resources must be fixed and known — impossible in general-purpose OSes. (3) Runtime overhead of checking safety on every request. Instead, modern OSes use a combination of careful API design (avoiding circular wait by convention), watchdog timers, and deadlock detection in specific subsystems (like DB engines).</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">🎯 TRICK: Two processes, each needs resource held by the other. Is this always deadlock? <span class="chevron">▾</span></div>
+      <div class="qa-a"><strong>Only if No Preemption holds.</strong> If the OS can preempt a resource (take it away and roll back), there's no deadlock. Also if one process finishes before the other starts needing the resource — timing matters. Deadlock requires ALL four Coffman conditions simultaneously.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">How does Detection Algorithm differ from Safety Algorithm? <span class="chevron">▾</span></div>
+      <div class="qa-a">Three differences: (1) Uses <strong>Request</strong> matrix (actual outstanding requests) instead of <strong>Need</strong> matrix. (2) Initializes Finish[i]=true if Allocation[i]=0 (not waiting at all), vs Safety which starts all at false. (3) If Finish[i]=false at end, those processes ARE deadlocked (not just "unsafe") — detection gives a definitive list of deadlocked processes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ SUMMARY -->
+<section id="summary">
+  <div class="section-label">Section 13 — Quick Revision</div>
+  <h2>Summary Sheet</h2>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h4>4 Conditions (ALL needed)</h4>
+      <ul>
+        <li>Mutual Exclusion</li>
+        <li>Hold &amp; Wait</li>
+        <li>No Preemption</li>
+        <li>Circular Wait ← easiest to break</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>Key Formula</h4>
+      <ul>
+        <li>Need = Max − Allocation</li>
+        <li>Safe: Need ≤ Work (use Work+Alloc)</li>
+        <li>Detect: Request ≤ Work</li>
+        <li>Available = Total − ΣAllocation</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>Banker's Algorithm Steps</h4>
+      <ul>
+        <li>1. Request ≤ Need? (else error)</li>
+        <li>2. Request ≤ Available? (else wait)</li>
+        <li>3. Pretend to allocate</li>
+        <li>4. Run Safety check</li>
+        <li>5. Safe→grant / Unsafe→rollback</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>Safety Algorithm Steps</h4>
+      <ul>
+        <li>1. Work=Available, Finish=false</li>
+        <li>2. Find i: !Finish[i] &amp; Need≤Work</li>
+        <li>3. Work+=Allocation[i], Finish[i]=T</li>
+        <li>4. Repeat until none found</li>
+        <li>5. All T → Safe; any F → Unsafe</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>RAG Rules</h4>
+      <ul>
+        <li>→ Request edge (process wants)</li>
+        <li>← Assignment edge (resource held)</li>
+        <li>Cycle + single instance = Deadlock</li>
+        <li>Cycle + multi instance = Maybe</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>Recovery Methods</h4>
+      <ul>
+        <li>Abort all deadlocked (drastic)</li>
+        <li>Abort one-by-one (expensive)</li>
+        <li>Preempt resources + rollback</li>
+        <li>Avoid starvation in victim selection</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>Complexities</h4>
+      <ul>
+        <li>Safety Algo: O(m × n²)</li>
+        <li>Detection Algo: O(m × n²)</li>
+        <li>Request check: O(m × n²) worst</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h4>Safe vs Unsafe</h4>
+      <ul>
+        <li>Safe → No deadlock (guaranteed)</li>
+        <li>Unsafe → Deadlock POSSIBLE</li>
+        <li>Deadlock → Always unsafe</li>
+        <li>Unsafe ≠ Deadlock (not always)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- SCROLL TOP -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ── Progress bar
+window.addEventListener('scroll', () => {
+  const el = document.documentElement;
+  const pct = el.scrollTop / (el.scrollHeight - el.clientHeight) * 100;
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('scrollTop').style.display = pct > 10 ? 'flex' : 'none';
+  document.querySelectorAll('nav a').forEach(a => {
+    const sec = document.querySelector(a.getAttribute('href'));
+    if (sec) {
+      const r = sec.getBoundingClientRect();
+      if (r.top <= 80 && r.bottom > 80) a.classList.add('active');
+      else a.classList.remove('active');
+    }
+  });
+});
+
+// ── Tabs
+function switchTab(group, id) {
+  document.querySelectorAll('#'+group+' .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#'+group+'-'+id.replace(/[^a-z0-9_]/g,''), '#ctabs-'+id, '#tabs1-'+id).forEach(el => {
+    if(el) el.classList.add('active');
+  });
+  const activeBtn = [...document.querySelectorAll('#'+group+' .tab-btn')].find(b => b.textContent.toLowerCase().includes(id.split('_')[0]));
+  if(activeBtn) activeBtn.classList.add('active');
+  const target = document.getElementById(group+'-'+id);
+  if(target){
+    document.querySelectorAll('[id^="'+group+'-"]').forEach(el => el.classList.remove('active'));
+    target.classList.add('active');
+  }
+}
+// simpler tab switcher
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function(){
+    const bar = this.closest('.tab-bar');
+    const card = bar.nextElementSibling;
+    const idx = [...bar.children].indexOf(this);
+    bar.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+    card.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===idx));
+  });
+});
+
+// ── Viva Q&A
+function toggleQA(el) {
+  el.classList.toggle('open');
+  const ans = el.nextElementSibling;
+  ans.style.display = ans.style.display === 'block' ? 'none' : 'block';
+}
+
+// ── Banker's Simulator
+function getMatrix(prefix, rows, cols) {
+  const m = [];
+  for(let i=0;i<rows;i++){
+    m.push([]);
+    for(let j=0;j<cols;j++){
+      const el = document.getElementById(prefix+i+j);
+      m[i].push(el ? parseInt(el.value)||0 : 0);
+    }
+  }
+  return m;
+}
+function getVec(prefix, len) {
+  return Array.from({length:len}, (_,j) => parseInt(document.getElementById(prefix+j)?.value)||0);
+}
+function vecLeq(a, b) { return a.every((v,i) => v <= b[i]); }
+function vecAdd(a, b) { return a.map((v,i) => v + b[i]); }
+function vecSub(a, b) { return a.map((v,i) => v - b[i]); }
+
+function runSafetyCore(avail, alloc, need, n, m) {
+  const work = [...avail];
+  const finish = Array(n).fill(false);
+  const seq = [];
+  let log = '';
+  log += `Initial Work = [${work}]\n\n`;
+  while(seq.length < n) {
+    let found = false;
+    for(let i=0;i<n;i++){
+      if(!finish[i] && vecLeq(need[i], work)){
+        log += `P${i}: Need=[${need[i]}] ≤ Work=[${work}] ✓ → `;
+        for(let j=0;j<m;j++) work[j] += alloc[i][j];
+        finish[i] = true;
+        seq.push(i);
+        log += `Work=[${work}]\n`;
+        found = true;
+      }
+    }
+    if(!found) break;
+  }
+  const safe = seq.length === n;
+  return {safe, seq, log};
+}
+
+function runSafety() {
+  const alloc = getMatrix('al', 5, 3);
+  const max_m = getMatrix('mx', 5, 3);
+  const avail = getVec('av', 3);
+  const n=5, m=3;
+  const need = alloc.map((row,i) => row.map((v,j) => max_m[i][j]-v));
+  const {safe, seq, log} = runSafetyCore(avail, alloc, need, n, m);
+  const out = document.getElementById('simOut');
+  out.style.display = 'block';
+  out.innerHTML = `<span class="step-out">Need Matrix:\n${need.map((r,i)=>`P${i}: [${r}]`).join('\n')}\n\nSafety Trace:\n${log}</span>` +
+    (safe ? `<span class="safe">\n✅ SAFE STATE\nSafe Sequence: &lt;${seq.map(i=>'P'+i).join(', ')}&gt;</span>`
+           : `<span class="unsafe">\n❌ UNSAFE STATE — Deadlock possible</span>`);
+}
+
+function runRequest() {
+  const alloc = getMatrix('al', 5, 3);
+  const max_m = getMatrix('mx', 5, 3);
+  let avail = getVec('av', 3);
+  const rq = getVec('rq', 3);
+  const pid = parseInt(document.getElementById('rp').value)||0;
+  const n=5, m=3;
+  const need = alloc.map((row,i) => row.map((v,j) => max_m[i][j]-v));
+  const out = document.getElementById('simOut');
+  out.style.display = 'block';
+  let log = `Request from P${pid}: [${rq}]\n\n`;
+  if(!vecLeq(rq, need[pid])){
+    out.innerHTML = `<span class="step-out">${log}</span><span class="unsafe">ERROR: Request exceeds Maximum Claim!\nNeed[P${pid}]=[${need[pid]}]</span>`;
+    return;
+  }
+  log += `Step 1: Request ≤ Need[P${pid}]? [${rq}] ≤ [${need[pid]}] ✓\n`;
+  if(!vecLeq(rq, avail)){
+    out.innerHTML = `<span class="step-out">${log}</span><span class="unsafe">P${pid} must wait — resources unavailable.\nAvailable=[${avail}]</span>`;
+    return;
+  }
+  log += `Step 2: Request ≤ Available? [${rq}] ≤ [${avail}] ✓\n`;
+  const newAvail = vecSub(avail, rq);
+  const newAlloc = alloc.map((r,i) => i===pid ? vecAdd(r,rq) : [...r]);
+  const newNeed  = need.map((r,i)  => i===pid ? vecSub(r,rq) : [...r]);
+  log += `Step 3: Pretend allocate → Available=${newAvail}, Alloc[P${pid}]=${newAlloc[pid]}, Need[P${pid}]=${newNeed[pid]}\nRunning safety check...\n\n`;
+  const {safe, seq, log: slog} = runSafetyCore(newAvail, newAlloc, newNeed, n, m);
+  out.innerHTML = `<span class="step-out">${log}${slog}</span>` +
+    (safe ? `<span class="safe">✅ REQUEST GRANTED\nSafe Sequence: &lt;${seq.map(i=>'P'+i).join(', ')}&gt;</span>`
+          : `<span class="unsafe">❌ REQUEST DENIED — Would cause unsafe state\nRolling back...</span>`);
+}
+
+function resetSim() {
+  const defaults = {
+    al:'010200302211002', mx:'753322902222433',
+    av:'332', rp:'1', rq:'102'
+  };
+  [0,1,2,3,4].forEach(i=>[0,1,2].forEach(j=>{
+    let el=document.getElementById('al'+i+j); if(el) el.value=defaults.al[i*3+j];
+    el=document.getElementById('mx'+i+j); if(el) el.value=defaults.mx[i*3+j];
+  }));
+  [0,1,2].forEach(j=>{
+    let el=document.getElementById('av'+j); if(el) el.value=defaults.av[j];
+    el=document.getElementById('rq'+j); if(el) el.value=defaults.rq[j];
+  });
+  document.getElementById('rp').value='1';
+  const out = document.getElementById('simOut');
+  out.style.display='none'; out.innerHTML='';
+}
+</script>
+</body>
+</html>

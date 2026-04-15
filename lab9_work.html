@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 9 — Memory Management I | OS Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #fdf8f2;
+  --bg2:     #faf3ea;
+  --bg3:     #f5ead8;
+  --bg4:     #ede0c8;
+  --bg5:     #e4d4b4;
+  --ink:     #2c1f0e;
+  --ink2:    #5a4228;
+  --ink3:    #8a6a48;
+  --ink4:    #b89878;
+  --accent:  #c0622a;
+  --accent2: #e08040;
+  --green:   #2a7a5c;
+  --blue:    #2a5fa0;
+  --red:     #c0402a;
+  --yellow:  #b07a10;
+  --purple:  #6a3a8c;
+  --teal:    #1a7a88;
+  --border:  rgba(160,110,60,0.18);
+  --border2: rgba(160,110,60,0.1);
+  --shadow:  0 2px 12px rgba(80,40,10,0.08);
+  --mono:    'DM Mono', monospace;
+  --sans:    'DM Sans', sans-serif;
+  --serif:   'Lora', serif;
+  --radius:  12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--ink); line-height: 1.8; font-size: 15px; }
+
+/* ── SIDEBAR ── */
+nav {
+  position: fixed; top: 0; left: 0;
+  width: 236px; height: 100vh;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; z-index: 100; padding: 20px 0 40px;
+  scrollbar-width: thin; scrollbar-color: var(--bg5) transparent;
+}
+.nav-logo { padding: 0 18px 18px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.nav-logo-title { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: 0.01em; }
+.nav-logo-sub { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+.nav-group { font-size: 10px; font-weight: 600; color: var(--ink4); padding: 10px 18px 3px; letter-spacing: 0.1em; text-transform: uppercase; }
+nav a { display: block; padding: 6px 18px 6px 16px; color: var(--ink2); text-decoration: none; font-size: 13px; border-left: 2px solid transparent; transition: all 0.15s; line-height: 1.4; }
+nav a:hover { color: var(--accent); background: var(--bg3); border-left-color: var(--accent2); }
+nav a.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg3); font-weight: 500; }
+
+/* ── PROGRESS ── */
+.progress-bar { position: fixed; top: 0; left: 236px; right: 0; height: 3px; background: var(--bg4); z-index: 200; }
+.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s; }
+
+/* ── MAIN ── */
+main { margin-left: 236px; padding: 0 52px 100px; max-width: 980px; }
+
+/* ── HERO ── */
+.hero { padding: 60px 0 44px; border-bottom: 1px solid var(--border); margin-bottom: 56px; }
+.lab-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--accent); font-size: 11px; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.hero h1 { font-family: var(--serif); font-size: 42px; font-weight: 700; line-height: 1.12; color: var(--ink); margin-bottom: 14px; }
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero > p { color: var(--ink2); font-size: 16px; max-width: 580px; line-height: 1.7; }
+.prereq-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.prereq-tag { font-size: 11.5px; padding: 4px 11px; border-radius: 6px; border: 1px solid var(--border); color: var(--ink3); background: var(--bg2); }
+.prereq-tag.before { border-color: rgba(42,122,92,0.3); color: var(--green); background: rgba(42,122,92,0.05); }
+.prereq-tag.current { border-color: rgba(192,98,42,0.4); color: var(--accent); background: rgba(192,98,42,0.06); font-weight: 600; }
+.prereq-tag.after  { border-color: rgba(42,95,160,0.3); color: var(--blue); background: rgba(42,95,160,0.05); }
+
+/* ── SECTIONS ── */
+section { margin-bottom: 72px; scroll-margin-top: 24px; }
+.topic-section { border-top: 1px solid var(--border); padding-top: 56px; margin-top: 0; }
+.section-title {
+  font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--ink);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 12px;
+}
+.section-title .icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border);
+}
+.section-sub { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 28px; display: flex; align-items: center; gap: 10px; }
+.section-sub::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+h3 { font-family: var(--serif); font-size: 19px; font-weight: 600; margin: 32px 0 12px; color: var(--ink); }
+h4 { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); margin: 18px 0 8px; letter-spacing: 0.02em; text-transform: uppercase; }
+p  { color: var(--ink2); margin-bottom: 14px; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+main p strong { color: var(--ink); }
+ul, ol { color: var(--ink2); padding-left: 22px; margin-bottom: 14px; }
+li { margin-bottom: 5px; }
+
+/* ── ANALOGY CARD ── */
+.analogy-card {
+  background: rgba(192,98,42,0.06); border: 1px solid rgba(192,98,42,0.2);
+  border-left: 4px solid var(--accent); border-radius: var(--radius);
+  padding: 20px 24px; margin: 20px 0;
+}
+.analogy-label { font-size: 10px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: var(--mono); }
+.analogy-card p { color: var(--ink2); margin: 0; }
+
+/* ── CARDS ── */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+.card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); transition: transform 0.15s, border-color 0.15s; }
+.card:hover { transform: translateY(-2px); border-color: rgba(192,98,42,0.25); }
+.card-title { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.02em; }
+.card p { font-size: 13px; margin: 0; color: var(--ink2); }
+
+/* ── HIGHLIGHT BOXES ── */
+.highlight-box { border-radius: var(--radius); padding: 18px 22px; margin: 18px 0; }
+.highlight-box.teal   { background: rgba(26,122,136,0.07); border: 1px solid rgba(26,122,136,0.2); }
+.highlight-box.green  { background: rgba(42,122,92,0.07);  border: 1px solid rgba(42,122,92,0.2);  }
+.highlight-box.yellow { background: rgba(176,122,16,0.07); border: 1px solid rgba(176,122,16,0.2); }
+.highlight-box.red    { background: rgba(192,64,42,0.07);  border: 1px solid rgba(192,64,42,0.2);  }
+.highlight-box.purple { background: rgba(106,58,140,0.07); border: 1px solid rgba(106,58,140,0.2); }
+.highlight-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: var(--mono); }
+.teal   .highlight-label { color: var(--teal); }
+.green  .highlight-label { color: var(--green); }
+.yellow .highlight-label { color: var(--yellow); }
+.red    .highlight-label { color: var(--red); }
+.purple .highlight-label { color: var(--purple); }
+.highlight-box p { margin: 0; font-size: 13.5px; color: var(--ink2); }
+.highlight-box p strong { color: var(--ink); }
+
+/* ── LISTS ── */
+ul.styled, ol.styled { padding-left: 0; list-style: none; margin: 14px 0; }
+ul.styled li, ol.styled li { padding: 5px 0 5px 26px; position: relative; color: var(--ink2); font-size: 14px; }
+ul.styled li::before { content: '▸'; position: absolute; left: 6px; color: var(--accent); font-size: 11px; top: 8px; }
+ol.styled { counter-reset: item; }
+ol.styled li { counter-increment: item; }
+ol.styled li::before { content: counter(item) "."; position: absolute; left: 0; color: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 600; top: 6px; }
+
+/* ── STEPS ── */
+.steps { margin: 18px 0; }
+.step { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+.step-num { min-width: 32px; height: 32px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--sans); font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.step-content { padding-top: 4px; }
+.step-content strong { display: block; font-weight: 600; color: var(--ink); margin-bottom: 3px; font-size: 14px; }
+.step-content p { margin: 0; font-size: 13px; color: var(--ink3); }
+
+/* ── CODE ── */
+.code-block { background: #2c1f0e; border-radius: var(--radius); overflow: hidden; margin: 20px 0; border: none; }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.code-lang { font-family: var(--mono); font-size: 11px; color: var(--accent2); letter-spacing: 1px; text-transform: uppercase; }
+.code-dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-r { background: #ff5f57; } .dot-y { background: #ffbd2e; } .dot-g { background: #28c941; }
+pre { background: #2c1f0e; color: #f0e6d6; border-radius: var(--radius); padding: 22px 20px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; tab-size: 4; border: none; }
+.code-block pre { border-radius: 0; }
+.kw  { color: #e8a87c; } .fn  { color: #7ec8a4; } .str { color: #c8e87a; }
+.num { color: #f0c070; } .cm  { color: #806850; font-style: italic; } .type { color: #f0a060; }
+
+/* ── TABLES ── */
+.table-wrap { overflow-x: auto; margin: 18px 0; border-radius: var(--radius); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--bg3); color: var(--accent); font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; padding: 9px 14px; text-align: left; border-bottom: 2px solid var(--bg5); }
+td { padding: 8px 14px; border-bottom: 1px solid var(--border2); color: var(--ink2); font-family: var(--mono); font-size: 12.5px; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg2); }
+td.good { color: var(--green); font-weight: 500; }
+td.bad  { color: var(--red);   font-weight: 500; }
+td.ok   { color: var(--yellow);}
+td.mono { color: var(--teal);  }
+
+/* ── WORKED EXAMPLES ── */
+.worked { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; margin: 20px 0; box-shadow: var(--shadow); }
+.worked-title { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--yellow); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.step-row { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px dashed var(--border2); align-items: flex-start; }
+.step-row:last-child { border-bottom: none; }
+.step-label { font-family: var(--mono); font-size: 11.5px; color: var(--accent); min-width: 88px; padding-top: 2px; flex-shrink: 0; font-weight: 500; }
+.step-detail { font-size: 13.5px; color: var(--ink2); line-height: 1.6; }
+.step-detail code { font-family: var(--mono); color: var(--teal); font-size: 12px; background: rgba(26,122,136,0.08); padding: 1px 5px; border-radius: 3px; }
+
+/* ── ALLOCATION TRACE ── */
+.alloc-trace { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0; }
+.trace-step { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 130px; }
+.trace-step-title { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+.tp { padding: 3px 7px; border-radius: 4px; font-family: var(--mono); font-size: 11.5px; display: flex; justify-content: space-between; margin-bottom: 2px; }
+.tp.free { background: rgba(42,122,92,0.1); color: var(--green); }
+.tp.used { background: rgba(192,98,42,0.1); color: var(--accent2); }
+.tp.allocated { background: rgba(192,98,42,0.2); color: var(--accent); border: 1px solid rgba(192,98,42,0.3); font-weight: 600; }
+
+/* ── FORMULA ── */
+.formula { background: var(--bg3); border: 1px solid var(--bg5); border-radius: 8px; padding: 10px 18px; font-family: var(--mono); font-size: 13px; color: var(--accent); margin: 12px 0; display: block; text-align: center; }
+code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,122,136,0.08); color: var(--teal); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(26,122,136,0.15); }
+
+/* ── VIVA ── */
+.viva-grid { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
+.viva-q { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; background: #fff; transition: border-color 0.15s; box-shadow: var(--shadow); }
+.viva-q:hover { border-color: rgba(192,98,42,0.3); }
+.viva-question { padding: 13px 18px; display: flex; align-items: flex-start; gap: 10px; font-family: var(--sans); font-weight: 500; font-size: 14px; color: var(--ink); user-select: none; }
+.viva-icon { color: var(--ink4); flex-shrink: 0; transition: transform 0.2s; margin-top: 1px; }
+.viva-answer { display: none; padding: 12px 18px 14px 42px; font-size: 13.5px; color: var(--ink2); line-height: 1.7; background: var(--bg2); border-top: 1px solid var(--border); }
+.viva-q.open .viva-answer { display: block; }
+.viva-q.open .viva-icon { transform: rotate(180deg); }
+.viva-answer strong { color: var(--ink); }
+
+/* ── MISTAKES ── */
+.mistake-list { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
+.mistake { display: flex; gap: 12px; background: rgba(192,64,42,0.05); border: 1px solid rgba(192,64,42,0.18); border-radius: var(--radius); padding: 14px 18px; align-items: flex-start; }
+.mistake-icon { font-size: 18px; flex-shrink: 0; }
+.mistake-text { font-size: 13.5px; color: var(--ink2); line-height: 1.6; }
+.mistake-text strong { color: var(--ink); display: block; margin-bottom: 3px; font-size: 14px; }
+
+/* ── SUMMARY ── */
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin: 20px 0; }
+.summary-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; border-left: 3px solid var(--accent); box-shadow: var(--shadow); }
+.summary-card h4 { color: var(--accent); margin: 0 0 7px; text-transform: none; letter-spacing: 0; font-size: 13px; }
+.summary-card p { font-size: 12.5px; color: var(--ink2); margin: 0; line-height: 1.5; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 44px 0; }
+
+/* ── MEM DIAGRAM ── */
+.mem-diagram { display: flex; gap: 2px; align-items: flex-end; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 20px 0; overflow-x: auto; flex-wrap: wrap; }
+.mem-block { display: flex; flex-direction: column; align-items: center; min-width: 68px; }
+.mem-bar { width: 60px; border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-family: var(--mono); font-size: 10px; font-weight: 600; color: #fff; }
+.mem-label { font-size: 10px; font-family: var(--mono); color: var(--ink3); margin-top: 5px; text-align: center; }
+.mem-free { background: linear-gradient(to top, rgba(42,122,92,0.7), rgba(42,122,92,0.4)); }
+.mem-proc { background: linear-gradient(to top, rgba(192,98,42,0.85), rgba(224,128,64,0.6)); }
+.mem-frag { background: repeating-linear-gradient(45deg, rgba(192,64,42,0.25), rgba(192,64,42,0.25) 3px, rgba(192,64,42,0.08) 3px, rgba(192,64,42,0.08) 8px); border: 1px dashed var(--red); }
+
+/* ── SCROLL TOP ── */
+.scroll-top { position: fixed; bottom: 28px; right: 28px; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff; border: none; cursor: pointer; font-size: 16px; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(192,98,42,0.35); transition: transform 0.2s; }
+.scroll-top:hover { transform: translateY(-2px); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  nav { display: none; }
+  main { margin-left: 0; padding: 0 24px 80px; }
+  .progress-bar { left: 0; }
+  .card-grid, .summary-grid { grid-template-columns: 1fr; }
+}
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg5); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-title">OS Study Guide</div>
+    <div class="nav-logo-sub">Lab 9 · Memory Management I</div>
+  </div>
+  <div class="nav-group">Foundation</div>
+  <a href="#overview">The Big Picture</a>
+  <a href="#partitioning">Partitioning</a>
+  <a href="#dynamic">Dynamic Allocation</a>
+  <div class="nav-group">Strategies</div>
+  <a href="#strategies">First / Best / Worst Fit</a>
+  <a href="#fragmentation">Fragmentation</a>
+  <div class="nav-group">Memory Models</div>
+  <a href="#paging">Paging</a>
+  <a href="#segmentation">Segmentation</a>
+  <div class="nav-group">Practice</div>
+  <a href="#numerical">Numerical Problems</a>
+  <a href="#code">C Code</a>
+  <div class="nav-group">Exam Prep</div>
+  <a href="#viva">Viva Q&amp;A</a>
+  <a href="#summary">Summary Sheet</a>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="lab-badge">📦 Lab 9</div>
+  <h1>Memory<br><em>Management I</em></h1>
+  <p>From partitions and holes to paging and segmentation — the complete deep-dive into how your OS juggles memory.</p>
+  <div class="prereq-bar">
+    <span class="prereq-tag before">✓ Before: Process Management</span>
+    <span class="prereq-tag before">✓ Before: Deadlock (Lab 8)</span>
+    <span class="prereq-tag current">✦ You Are Here</span>
+    <span class="prereq-tag after">→ Next: Page Replacement (Lab 10)</span>
+  </div>
+</div>
+
+  <!-- ─── OVERVIEW ─── -->
+  <section id="overview">
+    <div class="section-title">
+      <div class="icon icon-orange">🧠</div>
+      The Big Picture
+    </div>
+    <div class="section-sub">why memory management exists at all</div>
+
+    <div class="analogy-card">
+      <div class="analogy-label">☕ Analogy First</div>
+      <p>Imagine a restaurant (your RAM) with limited seats (memory). Customers (processes) arrive and need a table (memory space). The waiter (OS memory manager) has to decide: which table do you give them? What if all tables are taken? What if a big party needs 6 seats but the restaurant only has scattered tables of 2? That's memory management in a nutshell — fitting processes into limited physical memory as efficiently as possible.</p>
+    </div>
+
+    <p>When you run multiple programs simultaneously, your OS needs to keep each program's code and data in RAM. But RAM is finite. The memory manager's job is to:</p>
+
+    <ul class="styled">
+      <li>Keep track of which parts of RAM are in use and which are free</li>
+      <li>Allocate memory to processes when they request it</li>
+      <li>Reclaim memory when processes finish</li>
+      <li>Protect one process from accidentally accessing another's memory</li>
+      <li>Give processes the illusion of having more memory than physically exists (virtual memory)</li>
+    </ul>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Address Binding</div>
+        <p>Translating symbolic addresses in your code to actual physical memory addresses. Happens at compile time, load time, or runtime.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Logical vs Physical Address</div>
+        <p>Logical address = what the CPU generates. Physical address = actual RAM location. The MMU (Memory Management Unit) does the translation.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">MMU</div>
+        <p>Hardware chip that translates logical addresses to physical ones. With relocation register: Physical = Logical + Base.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box teal">
+      <div class="highlight-label">💡 Key Insight</div>
+      <p>In modern OSes, processes never see physical addresses directly. They always work with logical (virtual) addresses. This abstraction is what makes memory protection and virtual memory possible.</p>
+    </div>
+  </section>
+
+  <!-- ─── PARTITIONING ─── -->
+  <section id="partitioning" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-teal">🏗️</div>
+      Memory Partitioning
+    </div>
+    <div class="section-sub">Fixed-size vs Variable-size Partitions</div>
+
+    <p>The earliest and simplest approach to memory management. Divide RAM into chunks, give each chunk to a process.</p>
+
+    <h3>Fixed-Size Partitioning</h3>
+
+    <div class="analogy-card">
+      <div class="analogy-label">☕ Analogy</div>
+      <p>Imagine a parking lot with fixed-size parking spaces. A small car (small process) gets the same space as a truck (large process). Wasteful? Yes. Simple? Absolutely. That's fixed-size partitioning.</p>
+    </div>
+
+    <ul class="styled">
+      <li>Memory is divided into N partitions of equal (or different fixed) sizes at boot time</li>
+      <li>Each partition can hold exactly ONE process at a time</li>
+      <li>The OS keeps a partition table tracking which are free/occupied</li>
+      <li>Maximum degree of multiprogramming = N (number of partitions)</li>
+    </ul>
+
+    <div class="highlight-box red">
+      <div class="highlight-label">⚠️ Problem: Internal Fragmentation</div>
+      <p>A 50KB process in a 100KB partition wastes 50KB. That wasted space inside a partition is called <strong>internal fragmentation</strong>. You paid for a double room but sleep alone.</p>
+    </div>
+
+    <h3>Variable-Size Partitioning (Dynamic Partitioning)</h3>
+
+    <p>Instead of pre-defined sizes, the OS creates partitions of exactly the size needed by each process. Much more flexible — but introduces a new problem.</p>
+
+    <ul class="styled">
+      <li>OS maintains a list of free memory blocks called <strong>holes</strong></li>
+      <li>When a process arrives, the OS allocates a hole big enough for it</li>
+      <li>When a process leaves, its memory is returned to the free list (becomes a hole)</li>
+      <li>Adjacent free holes can be merged (<strong>coalescing</strong>)</li>
+      <li>Problem: Over time, free memory gets scattered in small, non-contiguous chunks → <strong>External Fragmentation</strong></li>
+    </ul>
+
+    <div class="highlight-box yellow">
+      <div class="highlight-label">💡 Coalescing</div>
+      <p>When a process releases memory, the OS checks if adjacent memory blocks are also free. If so, it merges them into one bigger hole. This reduces fragmentation — but doesn't eliminate it completely.</p>
+    </div>
+  </section>
+
+  <!-- ─── DYNAMIC ALLOCATION ─── -->
+  <section id="dynamic" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-green">🔍</div>
+      Dynamic Storage Allocation
+    </div>
+    <div class="section-sub">The "which hole do I pick?" problem</div>
+
+    <p>When multiple free holes exist and a new process needs memory, the OS must choose which hole to use. This is the <strong>Dynamic Storage Allocation Problem</strong>. Three classic solutions:</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Strategy</th>
+          <th>How It Works</th>
+          <th>Speed</th>
+          <th>Memory Use</th>
+          <th>Leftover</th>
+        </tr>
+        <tr>
+          <td><strong>First Fit</strong></td>
+          <td>Pick the FIRST hole big enough</td>
+          <td class="good">Fastest</td>
+          <td class="ok">Medium</td>
+          <td>Larger holes</td>
+        </tr>
+        <tr>
+          <td><strong>Best Fit</strong></td>
+          <td>Pick the SMALLEST hole big enough</td>
+          <td class="bad">Slowest</td>
+          <td class="good">Best</td>
+          <td class="good">Smallest</td>
+        </tr>
+        <tr>
+          <td><strong>Worst Fit</strong></td>
+          <td>Pick the LARGEST hole</td>
+          <td class="bad">Slow</td>
+          <td class="bad">Worst</td>
+          <td class="good">Largest (usable)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="highlight-box purple">
+      <div class="highlight-label">🧠 Counterintuitive Insight: Why Worst Fit?</div>
+      <p>Worst Fit might seem… terrible. But the logic is: if you always take the biggest hole, you leave a big leftover chunk that future large processes can still use. Best Fit's tiny leftover holes are often too small to be useful — creating "useless slivers" scattered everywhere.</p>
+    </div>
+  </section>
+
+  <!-- ─── STRATEGIES DEEP DIVE ─── -->
+  <section id="strategies" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-yellow">⚙️</div>
+      First Fit / Best Fit / Worst Fit
+    </div>
+    <div class="section-sub">Algorithms, pseudocode, and visual traces</div>
+
+    <h3>First Fit — Algorithm</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Maintain a list of holes</strong>
+          <p>The OS keeps track of all free memory blocks with their starting address and size.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>For each incoming process</strong>
+          <p>Scan the hole list from the beginning (or from where the last search ended — "next fit" variant).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Pick the first hole ≥ process size</strong>
+          <p>Stop immediately upon finding one. Don't look further.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Allocate & split</strong>
+          <p>Give the process exactly what it needs. The remainder (hole size − process size) becomes a new, smaller hole.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <strong>If no hole is big enough</strong>
+          <p>Process waits (or compaction is triggered). Report "allocation failed."</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Best Fit — Algorithm</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Scan the entire hole list</strong>
+          <p>Cannot stop early — must check every hole to find the minimum-sized sufficient one.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Track the best candidate</strong>
+          <p>Keep a pointer to the hole where: hole_size ≥ process_size AND hole_size is minimum.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Allocate from the best candidate</strong>
+          <p>Split as in First Fit. The leftover fragment will be tiny (best case: zero waste).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Optimization: sorted list</strong>
+          <p>If holes are kept sorted by size, Best Fit degrades to O(log n) search instead of O(n).</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Worst Fit — Algorithm</h3>
+    <p>Identical to Best Fit except in step 2: track the <em>maximum</em>-sized hole instead of minimum.</p>
+
+    <div class="highlight-box green">
+      <div class="highlight-label">📊 Performance Comparison (Simulations show)</div>
+      <p>Both First Fit and Best Fit are better than Worst Fit in terms of overall memory utilization. First Fit tends to be faster and good enough in practice. Best Fit saves slightly more memory but produces more tiny unusable fragments.</p>
+    </div>
+
+    <h3>Visual Trace — Lab Exercise Data</h3>
+    <p>Partitions: 100K, 500K, 200K, 300K, 600K &nbsp;|&nbsp; Processes: 212K, 417K, 112K, 426K</p>
+
+    <div class="worked">
+      <div class="worked-title">🔍 First Fit Walkthrough</div>
+      <div class="step-row">
+        <span class="step-label">P1 = 212K</span>
+        <span class="step-detail">Holes in order: 100K (too small), <code>500K ✓</code> (first fit!). Allocate → 500K hole splits to 288K leftover. Partitions now: 100, 288, 200, 300, 600</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">P2 = 417K</span>
+        <span class="step-detail">100K (no), 288K (no), 200K (no), 300K (no), <code>600K ✓</code>. Allocate → 600K splits to 183K. Partitions: 100, 288, 200, 300, 183</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">P3 = 112K</span>
+        <span class="step-detail">100K (no, 100 < 112), <code>288K ✓</code>. Allocate → 288K splits to 176K. Partitions: 100, 176, 200, 300, 183</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">P4 = 426K</span>
+        <span class="step-detail">100K(no), 176K(no), 200K(no), 300K(no), 183K(no). <strong style="color:var(--red)">No hole fits! P4 must wait.</strong></span>
+      </div>
+    </div>
+
+    <div class="worked">
+      <div class="worked-title">🔍 Best Fit Walkthrough</div>
+      <div class="step-row">
+        <span class="step-label">P1 = 212K</span>
+        <span class="step-detail">Holes: 100(no), 500(diff=288), 200(diff=−12 no), 300(diff=88), 600(diff=388). Best: <code>300K</code> (diff=88 smallest). → 300K splits to 88K.</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">P2 = 417K</span>
+        <span class="step-detail">100(no), 500(diff=83), 200(no), 88(no), 600(diff=183). Best: <code>500K</code> → splits to 83K.</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">P3 = 112K</span>
+        <span class="step-detail">100(no), 83(no), 200(diff=88), 88(no), 600(diff=488). Best: <code>200K</code> → splits to 88K.</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">P4 = 426K</span>
+        <span class="step-detail">100(no), 83(no), 88(no), 88(no), <code>600K ✓</code>(diff=174). Allocates! <strong style="color:var(--green)">Best Fit succeeds here!</strong></span>
+      </div>
+    </div>
+
+    <div class="highlight-box yellow">
+      <div class="highlight-label">🎯 Key Conclusion</div>
+      <p>In this example, Best Fit fits all 4 processes while First Fit fails on P4. Best Fit wins by preserving the large 600K hole for the big process. This is why Best Fit can outperform First Fit for specific workloads.</p>
+    </div>
+  </section>
+
+  <!-- ─── FRAGMENTATION ─── -->
+  <section id="fragmentation" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-red">💥</div>
+      Fragmentation
+    </div>
+    <div class="section-sub">The memory manager's nightmare</div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title" style="color:var(--red)">External Fragmentation</div>
+        <p>Total free memory is enough for a process, but it's scattered in small non-contiguous chunks. The process can't use it because it needs contiguous space.</p>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--yellow)">Internal Fragmentation</div>
+        <p>Allocated memory is slightly larger than requested. The extra (unused) space inside the partition is wasted. Common in fixed-size partitioning and paging.</p>
+      </div>
+    </div>
+
+    <h3>Compaction — The Solution to External Fragmentation</h3>
+
+    <div class="analogy-card">
+      <div class="analogy-label">☕ Analogy</div>
+      <p>It's like defragmenting a hard drive, or reorganizing your wardrobe by shoving all clothes to one side so there's one big empty space instead of several small gaps. You physically move things to make room.</p>
+    </div>
+
+    <ul class="styled">
+      <li>Shuffle memory contents to consolidate all free space into one large contiguous block</li>
+      <li><strong>Very expensive</strong> — requires copying entire process address spaces</li>
+      <li>Only possible if relocation is done at runtime (dynamic binding)</li>
+      <li>During compaction, all processes must be paused → significant performance hit</li>
+      <li>Modern systems prefer <strong>paging</strong> instead, which eliminates external fragmentation entirely</li>
+    </ul>
+
+    <div class="highlight-box teal">
+      <div class="highlight-label">📐 The 50% Rule (Knuth)</div>
+      <p>Statistical analysis shows that with First Fit allocation, roughly <strong>½ of N allocated blocks</strong> are lost to fragmentation — i.e., for every 3 usable partitions, 1 is wasted to fragmentation. This is why the OS needs better schemes like paging.</p>
+    </div>
+  </section>
+
+  <!-- ─── PAGING ─── -->
+  <section id="paging" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-teal">📄</div>
+      Paging
+    </div>
+    <div class="section-sub">The revolutionary fix for external fragmentation</div>
+
+    <div class="analogy-card">
+      <div class="analogy-label">☕ Analogy</div>
+      <p>Imagine a book (process) that needs space on shelves (RAM). Instead of needing one long contiguous shelf space, you tear the book into equal-sized chapters (pages) and put each chapter on any available shelf slot (frame). A table of contents (page table) tells you which slot holds which chapter. You can read the book in order even though the chapters are scattered — because you consult the TOC each time.</p>
+    </div>
+
+    <h3>Core Idea</h3>
+    <ul class="styled">
+      <li>Divide <strong>physical memory</strong> into fixed-size blocks called <strong>frames</strong></li>
+      <li>Divide <strong>logical memory</strong> into blocks of the same size called <strong>pages</strong></li>
+      <li>When a process runs, load its pages into any available frames (they don't have to be contiguous!)</li>
+      <li>The <strong>page table</strong> records which frame holds each page</li>
+      <li>The CPU generates logical addresses; the MMU translates them using the page table</li>
+    </ul>
+
+    <h3>Address Translation</h3>
+
+    <p>Every logical address has two parts:</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Field</th>
+          <th>Meaning</th>
+          <th>Bits</th>
+        </tr>
+        <tr>
+          <td><strong>Page Number (p)</strong></td>
+          <td>Index into the page table — tells us which page</td>
+          <td class="mono">high-order bits</td>
+        </tr>
+        <tr>
+          <td><strong>Page Offset (d)</strong></td>
+          <td>Byte position within the page/frame</td>
+          <td class="mono">low-order bits</td>
+        </tr>
+      </table>
+    </div>
+
+    <span class="formula">Physical Address = (frame_number × page_size) + offset</span>
+    <span class="formula">If logical address = X, page_size = 2^n:
+  page = X / page_size = X >> n
+  offset = X mod page_size = X & (page_size - 1)</span>
+
+    <h3>How Many Bits for What?</h3>
+    <ul class="styled">
+      <li>If logical address space = 2<sup>m</sup> bytes and page size = 2<sup>n</sup> bytes:</li>
+      <li>Page number uses <strong>m − n</strong> bits</li>
+      <li>Page offset uses <strong>n</strong> bits</li>
+      <li>Number of pages = 2<sup>(m−n)</sup></li>
+    </ul>
+
+    <div class="worked">
+      <div class="worked-title">📐 Lab Exercise: Page size = 32 bytes, 8 pages, 256 bytes total</div>
+      <div class="step-row">
+        <span class="step-label">Setup</span>
+        <span class="step-detail">Total memory = 256 bytes = 2<sup>8</sup> → 8-bit address. Page size = 32 = 2<sup>5</sup> → 5-bit offset. Page number = 8−5 = <code>3 bits</code>. So address format: [p p p | d d d d d]</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">204 bytes</span>
+        <span class="step-detail">204 in binary = <code>11001100</code>. Split: page bits = <code>110</code> = 6, offset bits = <code>01100</code> = 12. <strong>Page 6, Offset 12</strong></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">56 bytes</span>
+        <span class="step-detail">56 in binary = <code>00111000</code>. Split: page bits = <code>001</code> = 1, offset bits = <code>11000</code> = 24. <strong>Page 1, Offset 24</strong></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">Bits needed</span>
+        <span class="step-detail">We need <strong>8 bits</strong> to represent all 256 addresses (0–255).</span>
+      </div>
+    </div>
+
+    <h3>Page Table — Where Does It Live?</h3>
+    <ul class="styled">
+      <li><strong>In registers:</strong> Fast but only works for tiny page tables (few pages)</li>
+      <li><strong>In main memory:</strong> Works for large tables, but every memory access now requires 2 RAM accesses (one for page table, one for data) — slow!</li>
+      <li><strong>TLB (Translation Lookaside Buffer):</strong> A small, super-fast hardware cache for page table entries. Typical hit rate: 99%+. With TLB hit, translation is nearly free.</li>
+    </ul>
+
+    <div class="highlight-box teal">
+      <div class="highlight-label">💡 TLB Miss Handling</div>
+      <p>On a TLB miss, the hardware (or OS) walks the page table in RAM to find the mapping, loads it into the TLB, then retransmits the memory access. This is called a "page table walk." Modern CPUs have hardware page table walkers (PTWs) that do this automatically.</p>
+    </div>
+
+    <h3>Protection in Paging</h3>
+    <ul class="styled">
+      <li>Each page table entry includes <strong>protection bits</strong>: read/write/execute permissions</li>
+      <li>Accessing a page you don't have permission for → hardware trap → segmentation fault</li>
+      <li><strong>Valid/Invalid bit:</strong> If a page isn't in memory (swapped out), its entry has the invalid bit set. Accessing it triggers a <strong>page fault</strong> — the OS loads the page from disk.</li>
+    </ul>
+
+    <h3>Shared Pages</h3>
+    <ul class="styled">
+      <li>Multiple processes can share the same physical frames by having their page tables point to the same frame numbers</li>
+      <li>Perfect for shared libraries (libc, etc.) — code pages are read-only and can be shared across all processes using that library</li>
+      <li>This is the foundation of <strong>memory-mapped files</strong> and <strong>copy-on-write</strong></li>
+    </ul>
+
+    <h3>Problems With Simple Paging</h3>
+    <ul class="styled">
+      <li><strong>Page table size:</strong> For 32-bit address space with 4KB pages → 2<sup>20</sup> = 1 million entries! At 4 bytes each = 4MB just for page table, per process</li>
+      <li>Solution: <strong>Hierarchical page tables</strong> (multi-level), <strong>hashed page tables</strong>, <strong>inverted page tables</strong></li>
+      <li>Internal fragmentation still exists: last page of a process may not be full</li>
+    </ul>
+
+    <div class="highlight-box purple">
+      <div class="highlight-label">🔬 Advanced: Multilevel Paging</div>
+      <p>In x86-64, there are 4 levels of page tables (PML4 → PDPT → PD → PT). Each level maps a portion of the virtual address. This way, most of the page table can be swapped out — only the parts corresponding to active address ranges need to be in memory.</p>
+    </div>
+  </section>
+
+  <!-- ─── SEGMENTATION ─── -->
+  <section id="segmentation" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-purple">🗂️</div>
+      Segmentation
+    </div>
+    <div class="section-sub">memory that matches how programmers think</div>
+
+    <div class="analogy-card">
+      <div class="analogy-label">☕ Analogy</div>
+      <p>Paging splits memory blindly by equal chunk size. Segmentation is smarter — it splits memory by <em>meaning</em>. Your program has a code section, a stack, a heap, a data section. Segmentation gives each one its own logical chunk in memory. It's like organizing your house by rooms (kitchen, bedroom, office) rather than arbitrary 10m² grids.</p>
+    </div>
+
+    <h3>Key Concepts</h3>
+    <ul class="styled">
+      <li>A program is divided into logical segments: code, data, stack, heap, etc.</li>
+      <li>Each segment has a name and a length (offset range 0 to length−1)</li>
+      <li>Logical address = <strong>⟨segment number, offset⟩</strong></li>
+      <li>The <strong>Segment Table</strong> maps each segment to its physical location</li>
+      <li>Each segment table entry has a <strong>base</strong> (starting physical address) and <strong>limit</strong> (segment size)</li>
+    </ul>
+
+    <h3>Address Translation in Segmentation</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Extract segment number s and offset d from logical address</strong>
+          <p>CPU generates the ⟨s, d⟩ pair.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Look up Segment Table[s]</strong>
+          <p>Get base[s] and limit[s].</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Bounds check: d < limit[s]?</strong>
+          <p>If not: <strong>trap!</strong> → segmentation fault. Your program tried to access beyond its segment boundary.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Physical Address = base[s] + d</strong>
+          <p>Simple addition gives the physical address.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Lab Exercise — Segment Table Computation</h3>
+    <p>Physical memory layout (from Fig 9.3): Segment 0 @ 1400, Segment 1 @ 2400, Segment 2 @ 4300, Segment 3 @ 3200, Segment 4 @ 5700</p>
+    <p>Sizes: Seg 0: 1000, Seg 1: 400, Seg 2: 400, Seg 3: 1100, Seg 4: 1000 (approximate from diagram)</p>
+
+    <div class="worked">
+      <div class="worked-title">📐 Converting Logical to Physical Addresses</div>
+      <div class="step-row">
+        <span class="step-label">53 byte of Seg 2</span>
+        <span class="step-detail">Seg 2 base = 4300. Offset = 53. Check: 53 < limit(400) ✓. Physical = <code>4300 + 53 = 4353</code></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">852 byte of Seg 3</span>
+        <span class="step-detail">Seg 3 base = 3200. Offset = 852. Check: 852 < limit(1100) ✓. Physical = <code>3200 + 852 = 4052</code></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">1222 byte of Seg 0</span>
+        <span class="step-detail">Seg 0 base = 1400. Offset = 1222. Check: 1222 > limit(1000) → <strong style="color:var(--red)">TRAP! Segmentation fault.</strong> Invalid address.</span>
+      </div>
+    </div>
+
+    <h3>Segmentation vs. Paging</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Feature</th>
+          <th>Paging</th>
+          <th>Segmentation</th>
+        </tr>
+        <tr>
+          <td>Division</td>
+          <td>Fixed-size pages (transparent to programmer)</td>
+          <td>Variable-size segments (matches program structure)</td>
+        </tr>
+        <tr>
+          <td>External Fragmentation</td>
+          <td class="good">None</td>
+          <td class="bad">Yes</td>
+        </tr>
+        <tr>
+          <td>Internal Fragmentation</td>
+          <td class="bad">Small (last page)</td>
+          <td class="good">None</td>
+        </tr>
+        <tr>
+          <td>Sharing</td>
+          <td>Harder (must align on page boundaries)</td>
+          <td class="good">Natural (share whole segments)</td>
+        </tr>
+        <tr>
+          <td>Protection</td>
+          <td>Per-page</td>
+          <td class="good">Per-segment (natural boundaries)</td>
+        </tr>
+        <tr>
+          <td>Hardware complexity</td>
+          <td class="ok">Medium</td>
+          <td class="bad">Higher</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="highlight-box green">
+      <div class="highlight-label">💡 Real World: Segmentation + Paging Combined</div>
+      <p>x86 processors actually have both! Each segment maps to a range of linear addresses, which are then translated by paging. In practice, modern OSes (Linux, Windows) use "flat segmentation" (all segments overlap, covering the full address space) and rely only on paging for the real work. Segmentation is effectively vestigial on x86-64 in user mode.</p>
+    </div>
+  </section>
+
+  <!-- ─── NUMERICAL PROBLEMS ─── -->
+  <section id="numerical" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-yellow">🔢</div>
+      Numerical Problems
+    </div>
+    <div class="section-sub">fully worked, step-by-step</div>
+
+    <h3>Problem 1 — All Three Strategies Compared</h3>
+    <p><strong>Partitions:</strong> 100K, 500K, 200K, 300K, 600K &nbsp;|&nbsp; <strong>Processes:</strong> P1=212K, P2=417K, P3=112K, P4=426K</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Process</th>
+          <th>First Fit → Hole</th>
+          <th>Best Fit → Hole</th>
+          <th>Worst Fit → Hole</th>
+        </tr>
+        <tr>
+          <td><strong>P1 = 212K</strong></td>
+          <td class="mono">500K (leaves 288K)</td>
+          <td class="mono">300K (leaves 88K)</td>
+          <td class="mono">600K (leaves 388K)</td>
+        </tr>
+        <tr>
+          <td><strong>P2 = 417K</strong></td>
+          <td class="mono">600K (leaves 183K)</td>
+          <td class="mono">500K (leaves 83K)</td>
+          <td class="mono">500K (leaves 83K)</td>
+        </tr>
+        <tr>
+          <td><strong>P3 = 112K</strong></td>
+          <td class="mono">288K (leaves 176K)</td>
+          <td class="mono">200K (leaves 88K)</td>
+          <td class="mono">388K (leaves 276K)</td>
+        </tr>
+        <tr>
+          <td><strong>P4 = 426K</strong></td>
+          <td class="bad">Not allocated!</td>
+          <td class="mono good">600K (leaves 174K)</td>
+          <td class="bad">Not allocated!</td>
+        </tr>
+      </table>
+    </div>
+    <p><strong>Winner:</strong> Best Fit fits all 4 processes in this scenario.</p>
+
+    <h3>Problem 2 — Paging Address Translation</h3>
+    <p><strong>Given:</strong> Page size = 512 bytes, Logical address = 1502</p>
+
+    <div class="worked">
+      <div class="worked-title">📐 Translation</div>
+      <div class="step-row">
+        <span class="step-label">Step 1</span>
+        <span class="step-detail">Page number = floor(1502 / 512) = floor(2.933) = <code>2</code></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">Step 2</span>
+        <span class="step-detail">Offset = 1502 mod 512 = 1502 − (2 × 512) = 1502 − 1024 = <code>478</code></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">Step 3</span>
+        <span class="step-detail">Look up page table: suppose Page 2 → Frame 5. Physical = (5 × 512) + 478 = 2560 + 478 = <code>3038</code></span>
+      </div>
+    </div>
+
+    <h3>Problem 3 — Segmentation Address Translation</h3>
+    <p><strong>Segment Table:</strong> Seg0: base=1400, limit=1000 | Seg1: base=2400, limit=400 | Seg2: base=4300, limit=400</p>
+
+    <div class="worked">
+      <div class="worked-title">📐 For logical address ⟨2, 53⟩</div>
+      <div class="step-row">
+        <span class="step-label">Step 1</span>
+        <span class="step-detail">Segment = 2, Offset = 53</span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">Step 2</span>
+        <span class="step-detail">Check: 53 < limit[2] = 400? → <code>Yes, valid</code></span>
+      </div>
+      <div class="step-row">
+        <span class="step-label">Step 3</span>
+        <span class="step-detail">Physical = base[2] + offset = 4300 + 53 = <code>4353</code></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CODE ─── -->
+  <section id="code" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-green">💻</div>
+      Code Implementation
+    </div>
+    <div class="section-sub">C programs, fully commented</div>
+
+    <h3>First Fit, Best Fit & Worst Fit in C</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">C — memory_allocation.c</span>
+      </div>
+      <pre><span class="cm">/*
+ * Memory Allocation Strategies: First Fit, Best Fit, Worst Fit
+ * Lab 9 - OS Memory Management
+ * Compile: gcc memory_allocation.c -o memory_allocation
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="kw">#define</span> MAX_HOLES  <span class="num">10</span>
+<span class="kw">#define</span> MAX_PROCS  <span class="num">10</span>
+
+<span class="cm">/* ─── Data Structures ─── */</span>
+
+<span class="kw">typedef struct</span> {
+    <span class="type">int</span> id;           <span class="cm">/* Hole identifier (1-based) */</span>
+    <span class="type">int</span> size;         <span class="cm">/* Original hole size */</span>
+    <span class="type">int</span> remaining;    <span class="cm">/* Remaining size after allocations */</span>
+} Hole;
+
+<span class="kw">typedef struct</span> {
+    <span class="type">int</span> id;           <span class="cm">/* Process identifier (1-based) */</span>
+    <span class="type">int</span> size;         <span class="cm">/* Memory required */</span>
+    <span class="type">int</span> hole_id;      <span class="cm">/* Which hole was assigned (-1 = none) */</span>
+} Process;
+
+<span class="cm">/* ─── Helper: Reset allocations ─── */</span>
+<span class="kw">void</span> <span class="fn">reset</span>(Hole holes[], <span class="type">int</span> nh, Process procs[], <span class="type">int</span> np) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; nh; i++)
+        holes[i].remaining = holes[i].size;   <span class="cm">/* restore original sizes */</span>
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++)
+        procs[i].hole_id = <span class="num">-1</span>;              <span class="cm">/* mark all as unallocated */</span>
+}
+
+<span class="cm">/* ─── Print Results ─── */</span>
+<span class="kw">void</span> <span class="fn">print_results</span>(<span class="kw">const char</span>* strategy, Hole holes[], <span class="type">int</span> nh, Process procs[], <span class="type">int</span> np) {
+    printf(<span class="str">"\n╔══════════════════════════════════════╗\n"</span>);
+    printf(<span class="str">"  %-38s\n"</span>, strategy);
+    printf(<span class="str">"╚══════════════════════════════════════╝\n"</span>);
+
+    printf(<span class="str">"\n  PROCESS ALLOCATION:\n"</span>);
+    printf(<span class="str">"  %-12s %-12s %s\n"</span>, <span class="str">"Process"</span>, <span class="str">"Required"</span>, <span class="str">"Hole Assigned"</span>);
+    printf(<span class="str">"  %-12s %-12s %s\n"</span>, <span class="str">"-------"</span>, <span class="str">"--------"</span>, <span class="str">"-------------"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {
+        <span class="kw">if</span> (procs[i].hole_id == <span class="num">-1</span>)
+            printf(<span class="str">"  P%-11d %-12d Not allocated\n"</span>, procs[i].id, procs[i].size);
+        <span class="kw">else</span>
+            printf(<span class="str">"  P%-11d %-12d Hole %d\n"</span>, procs[i].id, procs[i].size, procs[i].hole_id);
+    }
+
+    printf(<span class="str">"\n  HOLE STATUS:\n"</span>);
+    printf(<span class="str">"  %-8s %-12s %-12s %s\n"</span>, <span class="str">"Hole"</span>, <span class="str">"Original"</span>, <span class="str">"Remaining"</span>, <span class="str">"Used"</span>);
+    printf(<span class="str">"  %-8s %-12s %-12s %s\n"</span>, <span class="str">"----"</span>, <span class="str">"--------"</span>, <span class="str">"---------"</span>, <span class="str">"----"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; nh; i++) {
+        printf(<span class="str">"  %-8d %-12d %-12d %d KB\n"</span>,
+            holes[i].id, holes[i].size, holes[i].remaining,
+            holes[i].size - holes[i].remaining);
+    }
+}
+
+<span class="cm">/* ═══════════════════════════════════════
+   FIRST FIT ALGORITHM
+   - Scan holes in order, pick the FIRST
+     one big enough.
+═══════════════════════════════════════ */</span>
+<span class="kw">void</span> <span class="fn">first_fit</span>(Hole holes[], <span class="type">int</span> nh, Process procs[], <span class="type">int</span> np) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {          <span class="cm">/* iterate each process */</span>
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; nh; j++) {       <span class="cm">/* iterate holes in order */</span>
+            <span class="kw">if</span> (holes[j].remaining &gt;= procs[i].size) {
+                procs[i].hole_id   = holes[j].id;
+                holes[j].remaining -= procs[i].size;  <span class="cm">/* reduce remaining space */</span>
+                <span class="kw">break</span>;                               <span class="cm">/* STOP - first fit found */</span>
+            }
+        }
+    }
+    <span class="fn">print_results</span>(<span class="str">"FIRST FIT"</span>, holes, nh, procs, np);
+}
+
+<span class="cm">/* ═══════════════════════════════════════
+   BEST FIT ALGORITHM
+   - Scan ALL holes, pick the SMALLEST
+     one that's big enough.
+═══════════════════════════════════════ */</span>
+<span class="kw">void</span> <span class="fn">best_fit</span>(Hole holes[], <span class="type">int</span> nh, Process procs[], <span class="type">int</span> np) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {
+        <span class="type">int</span> best_j = <span class="num">-1</span>;
+        <span class="type">int</span> best_diff = <span class="num">999999</span>;             <span class="cm">/* track smallest sufficient hole */</span>
+
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; nh; j++) {
+            <span class="type">int</span> diff = holes[j].remaining - procs[i].size;
+            <span class="kw">if</span> (diff &gt;= <span class="num">0</span> &amp;&amp; diff &lt; best_diff) {
+                best_diff = diff;
+                best_j = j;               <span class="cm">/* update best candidate */</span>
+            }
+        }
+        <span class="kw">if</span> (best_j != <span class="num">-1</span>) {
+            procs[i].hole_id = holes[best_j].id;
+            holes[best_j].remaining -= procs[i].size;
+        }
+    }
+    <span class="fn">print_results</span>(<span class="str">"BEST FIT"</span>, holes, nh, procs, np);
+}
+
+<span class="cm">/* ═══════════════════════════════════════
+   WORST FIT ALGORITHM
+   - Scan ALL holes, pick the LARGEST one.
+═══════════════════════════════════════ */</span>
+<span class="kw">void</span> <span class="fn">worst_fit</span>(Hole holes[], <span class="type">int</span> nh, Process procs[], <span class="type">int</span> np) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {
+        <span class="type">int</span> worst_j = <span class="num">-1</span>;
+        <span class="type">int</span> worst_size = <span class="num">-1</span>;              <span class="cm">/* track largest hole */</span>
+
+        <span class="kw">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j &lt; nh; j++) {
+            <span class="kw">if</span> (holes[j].remaining &gt;= procs[i].size
+                &amp;&amp; holes[j].remaining &gt; worst_size) {
+                worst_size = holes[j].remaining;
+                worst_j = j;
+            }
+        }
+        <span class="kw">if</span> (worst_j != <span class="num">-1</span>) {
+            procs[i].hole_id = holes[worst_j].id;
+            holes[worst_j].remaining -= procs[i].size;
+        }
+    }
+    <span class="fn">print_results</span>(<span class="str">"WORST FIT"</span>, holes, nh, procs, np);
+}
+
+<span class="cm">/* ═══════════════════════════════════════
+   MAIN — drives the simulation
+═══════════════════════════════════════ */</span>
+<span class="type">int</span> <span class="fn">main</span>() {
+    Hole holes[MAX_HOLES];
+    Process procs[MAX_PROCS];
+    <span class="type">int</span> nh, np;
+
+    printf(<span class="str">"=== Memory Allocation Strategy Simulator ===\n\n"</span>);
+
+    printf(<span class="str">"Enter number of holes: "</span>);
+    scanf(<span class="str">"%d"</span>, &amp;nh);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; nh; i++) {
+        holes[i].id = i + <span class="num">1</span>;
+        printf(<span class="str">"  Size of Hole %d (KB): "</span>, i + <span class="num">1</span>);
+        scanf(<span class="str">"%d"</span>, &amp;holes[i].size);
+        holes[i].remaining = holes[i].size;
+    }
+
+    printf(<span class="str">"\nEnter number of processes: "</span>);
+    scanf(<span class="str">"%d"</span>, &amp;np);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {
+        procs[i].id = i + <span class="num">1</span>;
+        printf(<span class="str">"  Memory required by P%d (KB): "</span>, i + <span class="num">1</span>);
+        scanf(<span class="str">"%d"</span>, &amp;procs[i].size);
+        procs[i].hole_id = <span class="num">-1</span>;
+    }
+
+    <span class="cm">/* Run all three strategies independently */</span>
+    <span class="fn">reset</span>(holes, nh, procs, np);
+    <span class="fn">first_fit</span>(holes, nh, procs, np);
+
+    <span class="fn">reset</span>(holes, nh, procs, np);
+    <span class="fn">best_fit</span>(holes, nh, procs, np);
+
+    <span class="fn">reset</span>(holes, nh, procs, np);
+    <span class="fn">worst_fit</span>(holes, nh, procs, np);
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <h3>Paging Simulation in C</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">C — paging_simulation.c</span>
+      </div>
+      <pre><span class="cm">/*
+ * Paging - Logical to Physical Address Translation
+ * Lab 9 - OS Memory Management
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;math.h&gt;</span>
+
+<span class="kw">#define</span> MAX_PAGES  <span class="num">256</span>   <span class="cm">/* max number of pages */</span>
+
+<span class="type">int</span> page_table[MAX_PAGES];  <span class="cm">/* page_table[page_num] = frame_num */</span>
+
+<span class="cm">/* ─── Translate a logical address to physical ─── */</span>
+<span class="kw">void</span> <span class="fn">translate</span>(<span class="type">int</span> logical, <span class="type">int</span> page_size) {
+    <span class="type">int</span> page_num  = logical / page_size;       <span class="cm">/* integer division → page number */</span>
+    <span class="type">int</span> offset    = logical % page_size;       <span class="cm">/* remainder → offset within page */</span>
+    <span class="type">int</span> frame_num = page_table[page_num];      <span class="cm">/* look up physical frame */</span>
+    <span class="type">int</span> physical  = (frame_num * page_size) + offset;  <span class="cm">/* compute physical addr */</span>
+
+    printf(<span class="str">"\n  Logical Address   : %d\n"</span>, logical);
+    printf(<span class="str">"  Page Number (p)  : %d  (binary: "</span>, page_num);
+    <span class="cm">/* print binary representation */</span>
+    <span class="kw">for</span> (<span class="type">int</span> b = <span class="num">7</span>; b &gt;= <span class="num">0</span>; b--)
+        printf(<span class="str">"%d"</span>, (page_num &gt;&gt; b) &amp; <span class="num">1</span>);
+    printf(<span class="str">")\n"</span>);
+    printf(<span class="str">"  Page Offset (d)  : %d\n"</span>, offset);
+    printf(<span class="str">"  Frame Number     : %d\n"</span>, frame_num);
+    printf(<span class="str">"  Physical Address : %d\n"</span>, physical);
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> page_size, num_pages, logical_addr;
+
+    printf(<span class="str">"=== Paging Address Translator ===\n\n"</span>);
+    printf(<span class="str">"Enter page size (bytes): "</span>);
+    scanf(<span class="str">"%d"</span>, &amp;page_size);
+
+    printf(<span class="str">"Enter number of pages: "</span>);
+    scanf(<span class="str">"%d"</span>, &amp;num_pages);
+
+    <span class="cm">/* Build the page table — enter frame numbers */</span>
+    printf(<span class="str">"\nEnter page table (page → frame mapping):\n"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; num_pages; i++) {
+        printf(<span class="str">"  Page %d → Frame: "</span>, i);
+        scanf(<span class="str">"%d"</span>, &amp;page_table[i]);
+    }
+
+    <span class="cm">/* Translate addresses */</span>
+    printf(<span class="str">"\nEnter logical address to translate (-1 to quit): "</span>);
+    <span class="kw">while</span> (scanf(<span class="str">"%d"</span>, &amp;logical_addr) &amp;&amp; logical_addr != <span class="num">-1</span>) {
+        <span class="type">int</span> total_logical = page_size * num_pages;
+        <span class="kw">if</span> (logical_addr &lt; <span class="num">0</span> || logical_addr &gt;= total_logical) {
+            printf(<span class="str">"  ERROR: Address %d out of logical space [0, %d)\n"</span>,
+                   logical_addr, total_logical);
+        } <span class="kw">else</span> {
+            <span class="fn">translate</span>(logical_addr, page_size);
+        }
+        printf(<span class="str">"\nEnter logical address (-1 to quit): "</span>);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="cm">/* ─── EXAMPLE RUN ─────────────────────────
+   Page size: 32 bytes | 8 pages | 256 total
+
+   Page Table:
+     Page 0 → Frame 3
+     Page 1 → Frame 7
+     ...
+     Page 6 → Frame 5
+
+   Translate 204:
+     p = 204/32 = 6, d = 204%32 = 12
+     frame = page_table[6] = 5
+     physical = 5*32 + 12 = 172
+
+   Translate 56:
+     p = 56/32 = 1, d = 56%32 = 24
+     frame = page_table[1] = 7
+     physical = 7*32 + 24 = 248
+─────────────────────────────────────── */</span></pre>
+    </div>
+
+    <h3>Segmentation Simulation in C</h3>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">C — segmentation.c</span>
+      </div>
+      <pre><span class="cm">/*
+ * Segmentation - Logical to Physical Address Translation
+ * Lab 9 Additional Exercise
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">#define</span> MAX_SEGS <span class="num">10</span>
+
+<span class="cm">/* Each segment table entry has a base and a limit */</span>
+<span class="kw">typedef struct</span> {
+    <span class="type">int</span> base;     <span class="cm">/* starting physical address */</span>
+    <span class="type">int</span> limit;    <span class="cm">/* size/length of segment */</span>
+} SegmentEntry;
+
+SegmentEntry seg_table[MAX_SEGS];
+
+<span class="cm">/* ─── Translate ⟨segment, offset⟩ → physical ─── */</span>
+<span class="kw">void</span> <span class="fn">translate</span>(<span class="type">int</span> seg, <span class="type">int</span> offset, <span class="type">int</span> num_segs) {
+    <span class="cm">/* Step 1: check segment number is valid */</span>
+    <span class="kw">if</span> (seg &lt; <span class="num">0</span> || seg &gt;= num_segs) {
+        printf(<span class="str">"  TRAP: Invalid segment number %d\n"</span>, seg);
+        <span class="kw">return</span>;
+    }
+
+    <span class="cm">/* Step 2: bounds check — offset must be within segment */</span>
+    <span class="kw">if</span> (offset &lt; <span class="num">0</span> || offset &gt;= seg_table[seg].limit) {
+        printf(<span class="str">"  TRAP: Offset %d out of bounds for Segment %d"</span>
+               <span class="str">" (limit=%d)\n"</span>,
+               offset, seg, seg_table[seg].limit);
+        printf(<span class="str">"  → SEGMENTATION FAULT!\n"</span>);
+        <span class="kw">return</span>;
+    }
+
+    <span class="cm">/* Step 3: compute physical address */</span>
+    <span class="type">int</span> physical = seg_table[seg].base + offset;
+
+    printf(<span class="str">"  Logical ⟨%d, %d⟩ → Physical: %d\n"</span>,
+           seg, offset, physical);
+    printf(<span class="str">"    (base[%d]=%d + offset=%d)\n"</span>,
+           seg, seg_table[seg].base, offset);
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> num_segs;
+
+    printf(<span class="str">"=== Segmentation Address Translator ===\n\n"</span>);
+    printf(<span class="str">"Enter number of segments: "</span>);
+    scanf(<span class="str">"%d"</span>, &amp;num_segs);
+
+    <span class="cm">/* Build segment table */</span>
+    printf(<span class="str">"\nEnter segment table:\n"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; num_segs; i++) {
+        printf(<span class="str">"  Segment %d — Base: "</span>, i);
+        scanf(<span class="str">"%d"</span>, &amp;seg_table[i].base);
+        printf(<span class="str">"  Segment %d — Limit: "</span>, i);
+        scanf(<span class="str">"%d"</span>, &amp;seg_table[i].limit);
+    }
+
+    <span class="cm">/* Translate addresses */</span>
+    <span class="type">int</span> seg, offset;
+    printf(<span class="str">"\nEnter logical addresses ⟨segment offset⟩ (-1 to quit):\n"</span>);
+    <span class="kw">while</span> (<span class="num">1</span>) {
+        printf(<span class="str">"  Segment: "</span>);
+        scanf(<span class="str">"%d"</span>, &amp;seg);
+        <span class="kw">if</span> (seg == <span class="num">-1</span>) <span class="kw">break</span>;
+        printf(<span class="str">"  Offset : "</span>);
+        scanf(<span class="str">"%d"</span>, &amp;offset);
+        <span class="fn">translate</span>(seg, offset, num_segs);
+        printf(<span class="str">"\n"</span>);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <h3>Next-Fit Allocation in C</h3>
+    <p>A variant of First Fit that remembers where the last search ended, distributing allocations more evenly across memory.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">C — next_fit.c</span>
+      </div>
+      <pre><span class="cm">/*
+ * Next-Fit Memory Allocation
+ * ─────────────────────────────────────────────────
+ * Like First Fit, but starts scanning from where the
+ * LAST allocation ended rather than always from index 0.
+ * Spreads allocations more evenly; avoids clustering
+ * small holes at the beginning of memory.
+ *
+ * Compile: gcc next_fit.c -o next_fit
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="kw">#define</span> MAX_H <span class="num">20</span>
+<span class="kw">#define</span> MAX_P <span class="num">20</span>
+
+<span class="kw">typedef struct</span> { <span class="type">int</span> size, rem; } Hole;
+<span class="kw">typedef struct</span> { <span class="type">int</span> size, hole; } Proc;
+
+<span class="type">int</span> nh, np;
+Hole holes[MAX_H];
+Proc procs[MAX_P];
+
+<span class="kw">void</span> <span class="fn">next_fit</span>() {
+    <span class="type">int</span> last = <span class="num">0</span>;   <span class="cm">/* remember where we left off */</span>
+
+    printf(<span class="str">"\n=== NEXT FIT ===\n"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {
+        <span class="type">int</span> found = <span class="num">0</span>;
+
+        <span class="cm">/* Scan from 'last' wrapping around circularly */</span>
+        <span class="kw">for</span> (<span class="type">int</span> cnt = <span class="num">0</span>; cnt &lt; nh; cnt++) {
+            <span class="type">int</span> j = (last + cnt) % nh;   <span class="cm">/* circular indexing */</span>
+            <span class="kw">if</span> (holes[j].rem &gt;= procs[i].size) {
+                procs[i].hole  = j + <span class="num">1</span>;
+                holes[j].rem  -= procs[i].size;
+                last           = j;            <span class="cm">/* update scan start */</span>
+                found          = <span class="num">1</span>;
+                printf(<span class="str">"P%d (%dK) → Hole %d (rem %dK)\n"</span>,
+                       i+<span class="num">1</span>, procs[i].size, j+<span class="num">1</span>, holes[j].rem);
+                <span class="kw">break</span>;
+            }
+        }
+        <span class="kw">if</span> (!found) {
+            procs[i].hole = -<span class="num">1</span>;
+            printf(<span class="str">"P%d (%dK) → Not allocated\n"</span>, i+<span class="num">1</span>, procs[i].size);
+        }
+    }
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    printf(<span class="str">"Next-Fit Memory Allocation\n\n"</span>);
+    printf(<span class="str">"Number of holes   : "</span>); scanf(<span class="str">"%d"</span>, &amp;nh);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; nh; i++) {
+        printf(<span class="str">"  Hole %d size (K): "</span>, i+<span class="num">1</span>); scanf(<span class="str">"%d"</span>, &amp;holes[i].size);
+        holes[i].rem = holes[i].size;
+    }
+    printf(<span class="str">"Number of processes: "</span>); scanf(<span class="str">"%d"</span>, &amp;np);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; np; i++) {
+        printf(<span class="str">"  P%d size (K): "</span>, i+<span class="num">1</span>); scanf(<span class="str">"%d"</span>, &amp;procs[i].size);
+        procs[i].hole = -<span class="num">1</span>;
+    }
+    <span class="fn">next_fit</span>();
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="cm">/* KEY DIFFERENCE from First Fit:
+ * First Fit always starts from hole[0].
+ * Next Fit starts from hole[last_used].
+ * If holes = [100K,500K,200K,300K,600K] and last=500K:
+ *   Next request scans 200K→300K→600K first, NOT 100K.
+ * Benefit: avoids wearing out the first few holes. */</span></pre>
+    </div>
+
+    <h3>Address Binding Stages — C Demo</h3>
+    <p>Demonstrates compile-time, load-time, and run-time address binding with a relocation register simulation.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-lang">C — address_binding.c</span>
+      </div>
+      <pre><span class="cm">/*
+ * Address Binding Simulation
+ * ─────────────────────────────────────────────────
+ * Shows how logical addresses are translated to
+ * physical addresses using a relocation register
+ * (base register) — the simplest form of MMU.
+ *
+ * Also demonstrates limit register for protection:
+ * if logical addr >= limit → trap (segfault).
+ *
+ * Compile: gcc address_binding.c -o addr_bind
+ */</span>
+
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdbool.h&gt;</span>
+
+<span class="cm">/* ─── Simulated MMU registers ─── */</span>
+<span class="kw">typedef struct</span> {
+    <span class="type">int</span> base;     <span class="cm">/* relocation register: starting physical addr */</span>
+    <span class="type">int</span> limit;    <span class="cm">/* limit register: max logical address allowed  */</span>
+} MMU;
+
+<span class="cm">/* Translate logical → physical; check limit register */</span>
+<span class="type">bool</span> <span class="fn">translate</span>(MMU mmu, <span class="type">int</span> logical, <span class="type">int</span>* physical) {
+    <span class="kw">if</span> (logical &lt; <span class="num">0</span> || logical &gt;= mmu.limit) {
+        printf(<span class="str">"  TRAP: logical %d >= limit %d → Segfault!\n"</span>,
+               logical, mmu.limit);
+        <span class="kw">return false</span>;
+    }
+    *physical = mmu.base + logical;
+    <span class="kw">return true</span>;
+}
+
+<span class="kw">void</span> <span class="fn">demo_process</span>(<span class="kw">const char</span>* name, MMU mmu, <span class="type">int</span> addrs[], <span class="type">int</span> n) {
+    printf(<span class="str">"\n── %s (base=%d, limit=%d) ──\n"</span>,
+           name, mmu.base, mmu.limit);
+    printf(<span class="str">"  %-12s  %-14s  %s\n"</span>,
+           <span class="str">"Logical"</span>, <span class="str">"Physical"</span>, <span class="str">"Status"</span>);
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="type">int</span> phys;
+        printf(<span class="str">"  %-12d  "</span>, addrs[i]);
+        <span class="kw">if</span> (<span class="fn">translate</span>(mmu, addrs[i], &amp;phys))
+            printf(<span class="str">"%-14d  ✓ OK\n"</span>, phys);
+        <span class="cm">/* trap message printed inside translate() on failure */</span>
+    }
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    printf(<span class="str">"=== MMU Address Binding Simulation ===\n"</span>);
+    printf(<span class="str">"Physical Address = Base + Logical\n"</span>);
+    printf(<span class="str">"Protection: Logical must be < Limit\n"</span>);
+
+    <span class="cm">/* Process A: loaded at physical address 14000, size 10000 */</span>
+    MMU mmuA = { .base = <span class="num">14000</span>, .limit = <span class="num">10000</span> };
+    <span class="type">int</span> addrsA[] = { <span class="num">0</span>, <span class="num">346</span>, <span class="num">1752</span>, <span class="num">9999</span>, <span class="num">10000</span> };  <span class="cm">/* last is illegal */</span>
+    <span class="fn">demo_process</span>(<span class="str">"Process A"</span>, mmuA, addrsA, <span class="num">5</span>);
+
+    <span class="cm">/* Process B: loaded at physical address 30000, size 5000 */</span>
+    MMU mmuB = { .base = <span class="num">30000</span>, .limit = <span class="num">5000</span>  };
+    <span class="type">int</span> addrsB[] = { <span class="num">0</span>, <span class="num">2000</span>, <span class="num">4999</span>, <span class="num">5000</span> };
+    <span class="fn">demo_process</span>(<span class="str">"Process B"</span>, mmuB, addrsB, <span class="num">4</span>);
+
+    <span class="cm">/* Interactive mode */</span>
+    printf(<span class="str">"\n=== Interactive Mode ===\n"</span>);
+    <span class="type">int</span> base, limit;
+    printf(<span class="str">"Enter base register  : "</span>); scanf(<span class="str">"%d"</span>, &amp;base);
+    printf(<span class="str">"Enter limit register : "</span>); scanf(<span class="str">"%d"</span>, &amp;limit);
+    MMU mmu = { base, limit };
+
+    <span class="type">int</span> la;
+    printf(<span class="str">"Enter logical address (-1 to quit): "</span>);
+    <span class="kw">while</span> (scanf(<span class="str">"%d"</span>, &amp;la) &amp;&amp; la != -<span class="num">1</span>) {
+        <span class="type">int</span> pa;
+        <span class="kw">if</span> (<span class="fn">translate</span>(mmu, la, &amp;pa))
+            printf(<span class="str">"  Physical address = %d\n"</span>, pa);
+        printf(<span class="str">"Enter logical address (-1 to quit): "</span>);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="cm">/* SAMPLE OUTPUT:
+ * Process A (base=14000, limit=10000)
+ *   Logical       Physical        Status
+ *   0             14000           ✓ OK
+ *   346           14346           ✓ OK
+ *   1752          15752           ✓ OK
+ *   9999          23999           ✓ OK
+ *   TRAP: logical 10000 >= limit 10000 → Segfault!
+ */</span></pre>
+    </div>
+  </section>
+  <section class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-red">⚠️</div>
+      Common Mistakes
+    </div>
+    <div class="section-sub">what students get wrong in exams</div>
+
+    <div class="mistake-list">
+      <div class="mistake">
+        <div class="mistake-icon">😬</div>
+        <div class="mistake-text">
+          <strong>Confusing Internal vs External Fragmentation</strong>
+          Internal = wasted space INSIDE an allocated partition. External = total free space is enough but it's scattered. Fixed-size → internal. Variable-size → external.
+        </div>
+      </div>
+      <div class="mistake">
+        <div class="mistake-icon">😬</div>
+        <div class="mistake-text">
+          <strong>Stopping Best/Worst Fit early</strong>
+          Best Fit and Worst Fit MUST scan the entire hole list. You cannot stop early. Only First Fit stops at the first match.
+        </div>
+      </div>
+      <div class="mistake">
+        <div class="mistake-icon">😬</div>
+        <div class="mistake-text">
+          <strong>Mixing up page number and frame number</strong>
+          Page number comes from the logical address. Frame number comes from the page table lookup. They're different things. Physical address uses the frame number.
+        </div>
+      </div>
+      <div class="mistake">
+        <div class="mistake-icon">😬</div>
+        <div class="mistake-text">
+          <strong>Forgetting the bounds check in segmentation</strong>
+          Always check offset &lt; limit BEFORE computing physical address. If it fails, it's a trap/fault — don't compute a physical address at all.
+        </div>
+      </div>
+      <div class="mistake">
+        <div class="mistake-icon">😬</div>
+        <div class="mistake-text">
+          <strong>Thinking paging eliminates ALL fragmentation</strong>
+          Paging eliminates EXTERNAL fragmentation. It still has INTERNAL fragmentation (the last page of a process may be partially empty).
+        </div>
+      </div>
+      <div class="mistake">
+        <div class="mistake-icon">😬</div>
+        <div class="mistake-text">
+          <strong>Page size must be power of 2</strong>
+          Page sizes are always powers of 2 (512B, 4KB, 2MB, 1GB). This makes address splitting trivial using bit shifts. Exam questions sometimes test this.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VIVA Q&A ─── -->
+  <section id="viva" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-purple">🎙️</div>
+      Viva & Exam Q&A
+    </div>
+    <div class="section-sub">click any question to reveal the answer</div>
+
+    <h3>Short Answer (Click to Expand)</h3>
+    <div class="viva-grid">
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>What is the difference between First Fit and Best Fit?</div>
+        <div class="viva-answer">First Fit allocates from the <strong>first hole big enough</strong> (scanning from the start, stops immediately). Best Fit scans the <strong>entire hole list</strong> and picks the <strong>smallest hole</strong> that's still big enough. First Fit is faster; Best Fit wastes less space per allocation but may create tiny unusable fragments.</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>What is external fragmentation? Give an example.</div>
+        <div class="viva-answer">External fragmentation occurs when <strong>total free memory is enough for a process, but it's scattered in non-contiguous chunks</strong>. Example: You need 300KB. Holes available: 100KB, 120KB, 80KB (total = 300KB). But since the process needs a contiguous block, it can't be allocated — even though enough total free memory exists.</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>How does paging solve external fragmentation?</div>
+        <div class="viva-answer">Paging divides a process into fixed-size pages and places them in any available frames — <strong>they don't need to be contiguous</strong>. So even if free frames are scattered throughout RAM, any process can be loaded. The page table keeps track of where each page lives. External fragmentation: completely eliminated.</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>What is a TLB and why is it needed?</div>
+        <div class="viva-answer">TLB (Translation Lookaside Buffer) is a <strong>small, fast hardware cache</strong> for page table entries. Without it, every memory access requires two RAM accesses: one to read the page table, one for actual data. With TLB, if the mapping is cached (TLB hit, ~99% of time), translation costs nearly zero. It's essentially a cache for virtual-to-physical address mappings.</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>What are the two fields in a segmentation logical address?</div>
+        <div class="viva-answer">A segmentation logical address has two components: <strong>⟨segment number s, offset d⟩</strong>. The segment number indexes into the segment table to get the base and limit. The offset is the byte position within that segment. Physical address = base[s] + d, provided d &lt; limit[s].</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>Why is compaction expensive?</div>
+        <div class="viva-answer">Compaction requires <strong>physically moving process data in memory</strong> to consolidate free holes. This involves: copying potentially large amounts of data, updating all pointers and addresses (only possible with runtime relocation), and halting all processes during the operation. It has O(n) time and I/O cost. Modern systems avoid it by using paging instead.</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>🎯 Trick Question: Does paging have any fragmentation at all?</div>
+        <div class="viva-answer">Yes! Paging eliminates <strong>external</strong> fragmentation but still has <strong>internal</strong> fragmentation. The last page of a process is rarely exactly full — the leftover space within that last page is wasted. On average, half a page per process is wasted (internal fragmentation = page_size/2 per process on average).</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>🎯 Trick Question: Which is better — First Fit or Best Fit?</div>
+        <div class="viva-answer">Neither is universally better. Simulations show they perform similarly overall. <strong>First Fit is faster</strong> (no full scan needed). <strong>Best Fit wastes less per allocation</strong> but produces more tiny fragments that are useless. Best Fit can outperform First Fit for specific workloads (as shown in the lab exercise where Best Fit fits P4 but First Fit can't). In practice, First Fit is commonly preferred due to speed.</div>
+      </div>
+
+      <div class="viva-q" onclick="toggleQ(this)">
+        <div class="viva-question"><span class="viva-icon">▶</span>Long Answer: Compare paging and segmentation in detail.</div>
+        <div class="viva-answer">
+          <strong>Paging:</strong> Divides logical and physical memory into equal fixed-size units (pages/frames). Transparent to the programmer. Eliminates external fragmentation. Still has internal fragmentation (last page). Page table can be large. Hardware support via TLB makes it fast. Used in all modern OSes.<br><br>
+          <strong>Segmentation:</strong> Divides memory according to the logical structure of the program (code, data, stack). Variable-size segments match programmer's view. No internal fragmentation. Has external fragmentation. Logical structure enables natural sharing and protection per segment. Segment table has base+limit per entry.<br><br>
+          <strong>Combined (Intel x86):</strong> Logical address → segmentation → linear address → paging → physical address. Modern Linux/Windows use flat segmentation (all segments = full address space) effectively making segmentation a no-op, relying solely on paging.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── SUMMARY ─── -->
+  <section id="summary" class="topic-section">
+    <div class="section-title">
+      <div class="icon icon-green">⚡</div>
+      Quick Revision Summary
+    </div>
+    <div class="section-sub">everything you need for last-minute prep</div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <h4>Fixed Partitioning</h4>
+        <p>Memory divided into fixed chunks at boot. One process per partition. Causes <strong>internal fragmentation</strong>. Simple but wasteful.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Variable Partitioning</h4>
+        <p>Partitions created on demand = exact process size. Causes <strong>external fragmentation</strong>. Needs coalescing of free holes.</p>
+      </div>
+      <div class="summary-card">
+        <h4>First Fit</h4>
+        <p>Scan from start, pick first hole ≥ process size. Fastest (O(n) worst, often less). Generally good in practice.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Best Fit</h4>
+        <p>Scan all holes, pick smallest sufficient one. Minimizes waste per allocation. Creates tiny unusable fragments. O(n) always.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Worst Fit</h4>
+        <p>Pick largest hole. Leaves big remainders. Performs worst overall. Only useful when large leftover chunks are specifically needed.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Paging</h4>
+        <p>Fixed-size pages = frames. Page table maps logical→physical. Eliminates external fragmentation. Has internal fragmentation. TLB speeds up translation.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Address in Paging</h4>
+        <p>page = addr ÷ page_size | offset = addr mod page_size | physical = frame × page_size + offset</p>
+      </div>
+      <div class="summary-card">
+        <h4>Segmentation</h4>
+        <p>Variable-size segments match program structure. Logical addr = ⟨s, d⟩. Check d &lt; limit[s] → physical = base[s] + d. External fragmentation still exists.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Compaction</h4>
+        <p>Shuffle memory to consolidate free space. Fixes external fragmentation but very expensive. Requires runtime relocation support.</p>
+      </div>
+      <div class="summary-card">
+        <h4>Fragmentation Quick Test</h4>
+        <p>Wasted space INSIDE allocation → Internal. Enough total free space but non-contiguous → External. Paging → eliminates external, has internal. Segmentation → has external, no internal.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box teal" style="margin-top: 32px;">
+      <div class="highlight-label">🗺️ Where This Fits in the OS Syllabus</div>
+      <p>Memory Management I (Lab 9) sits right after Deadlock Management (Lab 8) and directly before Memory Management II / Page Replacement (Lab 10). The concepts here — especially paging — are the foundation for understanding page faults, demand paging, and page replacement algorithms (FIFO, LRU, Optimal) in the next lab. Make sure you're solid on page table lookups before moving forward!</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <p style="text-align:center; color: var(--ink3); font-family: var(--mono); font-size: 12px; padding: 20px 0;">
+    Lab 9 · Memory Management I &nbsp;·&nbsp; OS Study Guide
+  </p>
+
+</main>
+
+<button class="scroll-top" id="stbtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+window.addEventListener('scroll', () => {
+  const e = document.documentElement;
+  const p = e.scrollTop / (e.scrollHeight - e.clientHeight) * 100;
+  document.getElementById('prog').style.width = p + '%';
+  document.getElementById('stbtn').style.display = p > 8 ? 'flex' : 'none';
+  document.querySelectorAll('nav a').forEach(a => {
+    const s = document.querySelector(a.getAttribute('href'));
+    if (s) { const r = s.getBoundingClientRect(); a.classList.toggle('active', r.top <= 80 && r.bottom > 80); }
+  });
+});
+function toggleQ(el) {
+  el.classList.toggle('open');
+  const a = el.querySelector('.viva-answer');
+  a.style.display = a.style.display === 'block' ? 'none' : 'block';
+}
+</script>
+</body>
+</html>
