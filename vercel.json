@@ -1,0 +1,10 @@
+{
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/lab8", "destination": "/lab8_work.html" },
+    { "source": "/lab9", "destination": "/lab9_work.html" },
+    { "source": "/lab10", "destination": "/lab10_page_replacement_enhanced.html" },
+    { "source": "/lab11", "destination": "/lab11_disk_scheduling.html" },
+    { "source": "/endsem", "destination": "/os_lab_endsem_prep.html" }
+  ]
+}
