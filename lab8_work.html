@@ -162,7 +162,7 @@ tr:hover td{background:var(--bg2)}
 
 <!-- ══════════════════════════════════════ HERO -->
 <div class="hero">
-  <div class="hero-badge">📌 Lab 8</div>
+  <div class="hero-badge"> Lab 8</div>
   <h1>Deadlock Management<br>Algorithms</h1>
   <p>From intuition to exam mastery — Banker's algorithm, deadlock detection, prevention strategies, with interactive simulators and fully-commented C code.</p>
   <div class="prereq-bar">
@@ -179,7 +179,7 @@ tr:hover td{background:var(--bg2)}
   <h2>What is Deadlock?</h2>
 
   <div class="info-card" style="margin-bottom:20px">
-    <h4>🧠 Real-World Analogy First</h4>
+    <h4> Real-World Analogy First</h4>
     <p>Imagine a one-lane bridge. Car A enters from the left. Car B enters from the right. Neither can reverse (they're holding their lane). Both are waiting for the other to move. <strong>Neither can ever proceed.</strong> That is deadlock.</p>
     <p style="margin-bottom:0">In OS terms: Process P1 holds resource R1 and needs R2. Process P2 holds R2 and needs R1. Circular wait → permanent block.</p>
   </div>
@@ -232,7 +232,7 @@ tr:hover td{background:var(--bg2)}
   </div>
 
   <div class="info-card warn">
-    <h4>⚡ Prevention Strategy</h4>
+    <h4> Prevention Strategy</h4>
     <p style="margin-bottom:0">To <strong>prevent</strong> deadlock, you design the system so that at least one condition can never hold:</p>
     <ul style="margin:8px 0 0; font-size:13px">
       <li>Break <strong>Mutual Exclusion</strong>: Use sharable resources (read-only files). Often impossible.</li>
@@ -291,7 +291,7 @@ tr:hover td{background:var(--bg2)}
   <p>Instead of preventing deadlock by restricting resource usage, <strong>avoidance</strong> allows the OS to dynamically decide: "Should I grant this request right now, or will it lead to deadlock?"</p>
 
   <div class="info-card" style="margin-bottom:20px">
-    <h4>🏦 The Bank Analogy</h4>
+    <h4> The Bank Analogy</h4>
     <p style="margin-bottom:0">Think of the OS as a bank. Each process is a customer who declares their maximum loan (max resources needed). The bank only lends if it can still serve all customers even in the worst case. A state is "safe" if the bank can always satisfy everyone eventually — even if some customers need to wait.</p>
   </div>
 
@@ -311,7 +311,7 @@ tr:hover td{background:var(--bg2)}
   </div>
 
   <div class="info-card warn">
-    <h4>⚠️ Key Insight</h4>
+    <h4> Key Insight</h4>
     <p style="margin-bottom:0">Not all unsafe states lead to deadlock. But the OS refuses to enter unsafe states as a precaution. This is <strong>conservative</strong> — resource utilization suffers, but deadlock is impossible.</p>
   </div>
 </section>
@@ -415,7 +415,7 @@ tr:hover td{background:var(--bg2)}
   <p>This is the <strong>exact example from your lab manual</strong>. Resources A, B, C with totals 10, 5, 7. Modify the matrices and click Run Safety Check.</p>
 
   <div class="sim-container">
-    <div class="sim-title">⚙️ Banker's Algorithm – Safety Check</div>
+    <div class="sim-title"> Banker's Algorithm – Safety Check</div>
 
     <div style="margin-bottom:16px; font-size:13px; color:var(--text2)">
       Total instances: A=<strong style="color:var(--accent)">10</strong>, B=<strong style="color:var(--accent)">5</strong>, C=<strong style="color:var(--accent)">7</strong>
@@ -465,8 +465,8 @@ tr:hover td{background:var(--bg2)}
       </div>
     </div>
 
-    <button class="sim-btn primary" onclick="runSafety()">▶ Run Safety Check</button>
-    <button class="sim-btn secondary" onclick="runRequest()">↩ Check Request</button>
+    <button class="sim-btn primary" onclick="runSafety()"> Run Safety Check</button>
+    <button class="sim-btn secondary" onclick="runRequest()"> Check Request</button>
     <button class="sim-btn secondary" onclick="resetSim()">↺ Reset</button>
 
     <div class="sim-output" id="simOut"></div>
@@ -525,7 +525,7 @@ tr:hover td{background:var(--bg2)}
         </tbody>
       </table>
     </div>
-    <p style="color:var(--green); font-family:var(--mono); margin:12px 0 0; font-size:13px">✅ SAFE STATE! Safe Sequence: &lt;P1, P3, P4, P0, P2&gt;</p>
+    <p style="color:var(--green); font-family:var(--mono); margin:12px 0 0; font-size:13px"> SAFE STATE! Safe Sequence: &lt;P1, P3, P4, P0, P2&gt;</p>
   </div>
 
   <h4>(c) Can P1's Request (1,0,2) be granted?</h4>
@@ -636,7 +636,7 @@ tr:hover td{background:var(--bg2)}
       <li>P1: Request=[2,0,2] ≤ Work=[5,2,4] → ✓. Work=[5,2,4]+[2,0,0]=[7,2,4]. Finish[1]=T</li>
       <li>P4: Request=[0,0,2] ≤ Work=[7,2,4] → ✓. Finish[4]=T</li>
     </ol>
-    <p style="color:var(--green); font-family:var(--mono); margin-top:10px; font-size:13px">✅ No deadlock! All processes can finish.</p>
+    <p style="color:var(--green); font-family:var(--mono); margin-top:10px; font-size:13px"> No deadlock! All processes can finish.</p>
   </div>
 
   <div class="info-card warn" style="margin-top:16px">
@@ -1043,19 +1043,19 @@ tr:hover td{background:var(--bg2)}
   <h3 style="margin-top:32px">Long Answer / Trick Questions</h3>
   <div>
     <div class="qa-item">
-      <div class="qa-q" onclick="toggleQA(this)">🎯 TRICK: Can an unsafe state lead to no deadlock? <span class="chevron">▾</span></div>
+      <div class="qa-q" onclick="toggleQA(this)"> TRICK: Can an unsafe state lead to no deadlock? <span class="chevron">▾</span></div>
       <div class="qa-a"><strong>YES!</strong> This is a key trick question. An unsafe state means deadlock is POSSIBLE, not certain. If processes happen to release resources in the right order, deadlock may never occur. The OS avoids unsafe states as a <em>conservative</em> precaution. The implication is one way: Safe → No deadlock. But Unsafe → MAYBE deadlock.</div>
     </div>
     <div class="qa-item">
-      <div class="qa-q" onclick="toggleQA(this)">🎯 TRICK: Is deadlock avoidance better than deadlock prevention? <span class="chevron">▾</span></div>
+      <div class="qa-q" onclick="toggleQA(this)"> TRICK: Is deadlock avoidance better than deadlock prevention? <span class="chevron">▾</span></div>
       <div class="qa-a"><strong>Not always!</strong> Avoidance (Banker's) gives better resource utilization than many prevention strategies but requires advance knowledge of max demands. Prevention via resource ordering (break circular wait) is simpler and has no runtime overhead. The "better" choice depends on context — real-time systems prefer prevention; database systems may prefer detection+recovery.</div>
     </div>
     <div class="qa-item">
-      <div class="qa-q" onclick="toggleQA(this)">🎯 Explain why Windows/Linux don't use Banker's Algorithm <span class="chevron">▾</span></div>
+      <div class="qa-q" onclick="toggleQA(this)"> Explain why Windows/Linux don't use Banker's Algorithm <span class="chevron">▾</span></div>
       <div class="qa-a">Three reasons: (1) Requires all processes to declare max resources upfront — impractical. (2) Number of processes and resources must be fixed and known — impossible in general-purpose OSes. (3) Runtime overhead of checking safety on every request. Instead, modern OSes use a combination of careful API design (avoiding circular wait by convention), watchdog timers, and deadlock detection in specific subsystems (like DB engines).</div>
     </div>
     <div class="qa-item">
-      <div class="qa-q" onclick="toggleQA(this)">🎯 TRICK: Two processes, each needs resource held by the other. Is this always deadlock? <span class="chevron">▾</span></div>
+      <div class="qa-q" onclick="toggleQA(this)"> TRICK: Two processes, each needs resource held by the other. Is this always deadlock? <span class="chevron">▾</span></div>
       <div class="qa-a"><strong>Only if No Preemption holds.</strong> If the OS can preempt a resource (take it away and roll back), there's no deadlock. Also if one process finishes before the other starts needing the resource — timing matters. Deadlock requires ALL four Coffman conditions simultaneously.</div>
     </div>
     <div class="qa-item">
@@ -1254,8 +1254,8 @@ function runSafety() {
   const out = document.getElementById('simOut');
   out.style.display = 'block';
   out.innerHTML = `<span class="step-out">Need Matrix:\n${need.map((r,i)=>`P${i}: [${r}]`).join('\n')}\n\nSafety Trace:\n${log}</span>` +
-    (safe ? `<span class="safe">\n✅ SAFE STATE\nSafe Sequence: &lt;${seq.map(i=>'P'+i).join(', ')}&gt;</span>`
-           : `<span class="unsafe">\n❌ UNSAFE STATE — Deadlock possible</span>`);
+    (safe ? `<span class="safe">\n SAFE STATE\nSafe Sequence: &lt;${seq.map(i=>'P'+i).join(', ')}&gt;</span>`
+           : `<span class="unsafe">\n UNSAFE STATE — Deadlock possible</span>`);
 }
 
 function runRequest() {
@@ -1285,8 +1285,8 @@ function runRequest() {
   log += `Step 3: Pretend allocate → Available=${newAvail}, Alloc[P${pid}]=${newAlloc[pid]}, Need[P${pid}]=${newNeed[pid]}\nRunning safety check...\n\n`;
   const {safe, seq, log: slog} = runSafetyCore(newAvail, newAlloc, newNeed, n, m);
   out.innerHTML = `<span class="step-out">${log}${slog}</span>` +
-    (safe ? `<span class="safe">✅ REQUEST GRANTED\nSafe Sequence: &lt;${seq.map(i=>'P'+i).join(', ')}&gt;</span>`
-          : `<span class="unsafe">❌ REQUEST DENIED — Would cause unsafe state\nRolling back...</span>`);
+    (safe ? `<span class="safe"> REQUEST GRANTED\nSafe Sequence: &lt;${seq.map(i=>'P'+i).join(', ')}&gt;</span>`
+          : `<span class="unsafe"> REQUEST DENIED — Would cause unsafe state\nRolling back...</span>`);
 }
 
 function resetSim() {

@@ -605,7 +605,7 @@ input:focus, select:focus { border-color: var(--accent2); }
 
 <!-- HERO -->
 <div class="hero">
-  <div class="lab-badge">📄 Lab 10</div>
+  <div class="lab-badge"> Lab 10</div>
   <h1>Memory Management II<br><em>Page Replacement</em></h1>
   <p class="hero-desc">Master FIFO, Optimal, LRU and approximation algorithms — with step-by-step traces, interactive simulators, Bélády's anomaly explained, and fully commented C code.</p>
   <div class="tag-row">
@@ -621,7 +621,7 @@ input:focus, select:focus { border-color: var(--accent2); }
   <h2>Why Do We Need Page Replacement?</h2>
 
   <div class="callout info">
-    <h4>🏠 The Hotel Analogy</h4>
+    <h4> The Hotel Analogy</h4>
     <p>Imagine a hotel (RAM) with only 3 rooms (frames). Guests (pages) keep checking in. When all rooms are full and a new guest arrives, the manager must evict someone to make room. <strong>Which guest do you evict?</strong> That's the page replacement problem. The goal: evict the guest who will be back <em>last</em> — minimising disruption (page faults).</p>
   </div>
 
@@ -711,7 +711,7 @@ input:focus, select:focus { border-color: var(--accent2); }
   </ul>
 
   <div class="callout warn">
-    <h4>⚠️ Bélády's Anomaly Applies to FIFO</h4>
+    <h4> Bélády's Anomaly Applies to FIFO</h4>
     <p style="margin:0;font-size:13px">Counterintuitively, FIFO can produce <strong>more</strong> page faults with <strong>more</strong> frames. This defect is known as Bélády's Anomaly. Only FIFO (and some other algorithms) suffer from it. OPT and LRU do not.</p>
   </div>
 
@@ -1284,7 +1284,7 @@ input:focus, select:focus { border-color: var(--accent2); }
   <p>Enter any reference string and number of frames. Switch between FIFO, OPT, and LRU to compare faults side-by-side.</p>
 
   <div class="sim-wrap">
-    <div class="sim-title"><span>📋</span> Page Replacement Simulator</div>
+    <div class="sim-title"><span></span> Page Replacement Simulator</div>
 
     <div class="algo-tabs">
       <button class="atab active-fifo" id="tab-fifo" onclick="setAlgo('fifo')">FIFO</button>
@@ -1301,8 +1301,8 @@ input:focus, select:focus { border-color: var(--accent2); }
         <span class="ctrl-label">Frames</span>
         <input type="number" id="nFrames" value="3" min="1" max="10">
       </div>
-      <button class="btn btn-primary" onclick="runSim()">▶ Run</button>
-      <button class="btn btn-secondary" onclick="runAll()">⚡ Compare All</button>
+      <button class="btn btn-primary" onclick="runSim()"> Run</button>
+      <button class="btn btn-secondary" onclick="runAll()"> Compare All</button>
     </div>
 
     <div class="frame-display" id="frameDisplay"></div>
@@ -1311,7 +1311,7 @@ input:focus, select:focus { border-color: var(--accent2); }
 
   <!-- Compare all output -->
   <div class="sim-wrap" id="compareWrap" style="display:none">
-    <div class="sim-title"><span>⚡</span> Algorithm Comparison</div>
+    <div class="sim-title"><span></span> Algorithm Comparison</div>
     <div id="compareOut"></div>
   </div>
 </section>
@@ -1730,20 +1730,20 @@ input:focus, select:focus { border-color: var(--accent2); }
 
   <h3 style="margin-top:28px">Trick / Long Questions</h3>
 
-  <div class="qa"><div class="qa-q" onclick="toggleQ(this)">🎯 TRICK: With FIFO and 4 frames, can we get MORE faults than with 3 frames? Show an example. <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="toggleQ(this)"> TRICK: With FIFO and 4 frames, can we get MORE faults than with 3 frames? Show an example. <span class="ch">▾</span></div>
   <div class="qa-a">Yes — this is Bélády's Anomaly. Example: reference string <code>1,2,3,4,1,2,5,1,2,3,4,5</code>.<br>
   With 3 frames: 9 page faults.<br>
   With 4 frames: 10 page faults (more!).<br>
   This happens because adding a frame changes the FIFO eviction order in a way that happens to evict pages that are about to be needed. LRU and OPT are immune because they are stack algorithms.</div></div>
 
-  <div class="qa"><div class="qa-q" onclick="toggleQ(this)">🎯 What is a stack algorithm? Give two examples. <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="toggleQ(this)"> What is a stack algorithm? Give two examples. <span class="ch">▾</span></div>
   <div class="qa-a">A replacement algorithm is a <strong>stack algorithm</strong> if: for any reference string and any n, the set of pages in memory with n frames is always a subset of the set with n+1 frames. Formally: S(n) ⊆ S(n+1) for all reference strings.<br>
   Examples: <strong>OPT</strong> and <strong>LRU</strong>. Stack algorithms are provably immune to Bélády's anomaly — adding a frame can never increase page faults. FIFO is NOT a stack algorithm.</div></div>
 
-  <div class="qa"><div class="qa-q" onclick="toggleQ(this)">🎯 Why doesn't thrashing occur with enough frames? <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="toggleQ(this)"> Why doesn't thrashing occur with enough frames? <span class="ch">▾</span></div>
   <div class="qa-a">Thrashing occurs when a process doesn't have enough frames to hold its <strong>working set</strong> (the set of pages actively being used in the current phase). The process constantly page faults, spending more time on I/O than on actual computation. If the OS allocates frames ≥ working set size, the hot pages stay in memory, faults become rare, and thrashing stops. This is why the <strong>working set model</strong> is used in practice to guide frame allocation.</div></div>
 
-  <div class="qa"><div class="qa-q" onclick="toggleQ(this)">🎯 LRU gives fewer faults than FIFO — is this always true? <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="toggleQ(this)"> LRU gives fewer faults than FIFO — is this always true? <span class="ch">▾</span></div>
   <div class="qa-a"><strong>No — not always.</strong> For specific reference strings, FIFO can match or even beat LRU. However, LRU is generally better in practice because it uses recency information. LRU also has a theoretical guarantee: it never performs worse than OPT by more than a constant factor under certain conditions. The lab manual example (20 refs, 3 frames) gives FIFO=15 vs LRU=12, which is the typical case.</div></div>
 </section>
 
@@ -1822,7 +1822,7 @@ input:focus, select:focus { border-color: var(--accent2); }
   <h2>Demand Paging & Virtual Memory Deep Dive</h2>
 
   <div class="topic-intro">
-    <div class="topic-icon">📦</div>
+    <div class="topic-icon"></div>
     <div>
       <p style="margin:0 0 8px;font-size:15px"><strong>Demand paging</strong> is the mechanism that makes virtual memory real. Instead of loading an entire process into RAM at startup, the OS loads pages <em>only when they're first accessed</em>. This is the foundation on which every page replacement algorithm sits.</p>
       <p style="margin:0;font-size:13px;color:var(--ink3)">Without demand paging, page replacement would never be needed — because you'd only run programs that fit entirely in RAM.</p>
@@ -1866,7 +1866,7 @@ input:focus, select:focus { border-color: var(--accent2); }
   </div>
 
   <div class="callout info">
-    <h4>💡 The Dirty Bit Optimisation</h4>
+    <h4> The Dirty Bit Optimisation</h4>
     <p style="margin:0;font-size:13px">Each page table entry has a <strong>dirty/modified bit</strong>. Set by hardware whenever a page is written to. On eviction: if dirty → write to disk (expensive). If clean → just throw it away (fast — we can reload from disk if needed). This is why dirty page eviction costs <em>two disk operations</em> (one write + potential future read) while clean eviction costs at most one.</p>
   </div>
 
@@ -1901,7 +1901,7 @@ input:focus, select:focus { border-color: var(--accent2); }
   <h2>Thrashing <span class="badge h">Always in Exams</span></h2>
 
   <div class="topic-intro">
-    <div class="topic-icon">🔥</div>
+    <div class="topic-icon"></div>
     <div>
       <p style="margin:0 0 8px;font-size:15px"><strong>Thrashing</strong> is when a process spends more time swapping pages in and out than actually executing useful work. CPU utilisation crashes. The system appears frozen. Understanding thrashing is one of the most important (and most tested) topics in OS memory management.</p>
     </div>
@@ -2747,7 +2747,7 @@ CountFrame frames[MAX_F];
   </div>
 
   <div class="callout success">
-    <h4>💡 Why Clock beats LRU in this example</h4>
+    <h4> Why Clock beats LRU in this example</h4>
     <p style="font-size:13px;margin:0">Clock (11 faults) &lt; LRU (12 faults) here — a quirk of this specific reference string. In general, LRU ≤ Clock ≤ FIFO for most workloads. Clock's approximation sometimes "gets lucky" with its sweep order. The key point: Clock is O(1) per reference while true LRU needs O(n) or a complex data structure.</p>
   </div>
 </section>

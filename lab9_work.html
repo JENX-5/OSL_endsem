@@ -291,7 +291,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
 
 <!-- HERO -->
 <div class="hero">
-  <div class="lab-badge">📦 Lab 9</div>
+  <div class="lab-badge"> Lab 9</div>
   <h1>Memory<br><em>Management I</em></h1>
   <p>From partitions and holes to paging and segmentation — the complete deep-dive into how your OS juggles memory.</p>
   <div class="prereq-bar">
@@ -305,13 +305,13 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── OVERVIEW ─── -->
   <section id="overview">
     <div class="section-title">
-      <div class="icon icon-orange">🧠</div>
+      <div class="icon icon-orange"></div>
       The Big Picture
     </div>
     <div class="section-sub">why memory management exists at all</div>
 
     <div class="analogy-card">
-      <div class="analogy-label">☕ Analogy First</div>
+      <div class="analogy-label"> Analogy First</div>
       <p>Imagine a restaurant (your RAM) with limited seats (memory). Customers (processes) arrive and need a table (memory space). The waiter (OS memory manager) has to decide: which table do you give them? What if all tables are taken? What if a big party needs 6 seats but the restaurant only has scattered tables of 2? That's memory management in a nutshell — fitting processes into limited physical memory as efficiently as possible.</p>
     </div>
 
@@ -341,7 +341,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </div>
 
     <div class="highlight-box teal">
-      <div class="highlight-label">💡 Key Insight</div>
+      <div class="highlight-label"> Key Insight</div>
       <p>In modern OSes, processes never see physical addresses directly. They always work with logical (virtual) addresses. This abstraction is what makes memory protection and virtual memory possible.</p>
     </div>
   </section>
@@ -349,7 +349,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── PARTITIONING ─── -->
   <section id="partitioning" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-teal">🏗️</div>
+      <div class="icon icon-teal"></div>
       Memory Partitioning
     </div>
     <div class="section-sub">Fixed-size vs Variable-size Partitions</div>
@@ -359,7 +359,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <h3>Fixed-Size Partitioning</h3>
 
     <div class="analogy-card">
-      <div class="analogy-label">☕ Analogy</div>
+      <div class="analogy-label"> Analogy</div>
       <p>Imagine a parking lot with fixed-size parking spaces. A small car (small process) gets the same space as a truck (large process). Wasteful? Yes. Simple? Absolutely. That's fixed-size partitioning.</p>
     </div>
 
@@ -371,7 +371,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </ul>
 
     <div class="highlight-box red">
-      <div class="highlight-label">⚠️ Problem: Internal Fragmentation</div>
+      <div class="highlight-label"> Problem: Internal Fragmentation</div>
       <p>A 50KB process in a 100KB partition wastes 50KB. That wasted space inside a partition is called <strong>internal fragmentation</strong>. You paid for a double room but sleep alone.</p>
     </div>
 
@@ -388,7 +388,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </ul>
 
     <div class="highlight-box yellow">
-      <div class="highlight-label">💡 Coalescing</div>
+      <div class="highlight-label"> Coalescing</div>
       <p>When a process releases memory, the OS checks if adjacent memory blocks are also free. If so, it merges them into one bigger hole. This reduces fragmentation — but doesn't eliminate it completely.</p>
     </div>
   </section>
@@ -396,7 +396,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── DYNAMIC ALLOCATION ─── -->
   <section id="dynamic" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-green">🔍</div>
+      <div class="icon icon-green"></div>
       Dynamic Storage Allocation
     </div>
     <div class="section-sub">The "which hole do I pick?" problem</div>
@@ -437,7 +437,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </div>
 
     <div class="highlight-box purple">
-      <div class="highlight-label">🧠 Counterintuitive Insight: Why Worst Fit?</div>
+      <div class="highlight-label"> Counterintuitive Insight: Why Worst Fit?</div>
       <p>Worst Fit might seem… terrible. But the logic is: if you always take the biggest hole, you leave a big leftover chunk that future large processes can still use. Best Fit's tiny leftover holes are often too small to be useful — creating "useless slivers" scattered everywhere.</p>
     </div>
   </section>
@@ -445,7 +445,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── STRATEGIES DEEP DIVE ─── -->
   <section id="strategies" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-yellow">⚙️</div>
+      <div class="icon icon-yellow"></div>
       First Fit / Best Fit / Worst Fit
     </div>
     <div class="section-sub">Algorithms, pseudocode, and visual traces</div>
@@ -525,7 +525,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <p>Identical to Best Fit except in step 2: track the <em>maximum</em>-sized hole instead of minimum.</p>
 
     <div class="highlight-box green">
-      <div class="highlight-label">📊 Performance Comparison (Simulations show)</div>
+      <div class="highlight-label"> Performance Comparison (Simulations show)</div>
       <p>Both First Fit and Best Fit are better than Worst Fit in terms of overall memory utilization. First Fit tends to be faster and good enough in practice. Best Fit saves slightly more memory but produces more tiny unusable fragments.</p>
     </div>
 
@@ -533,7 +533,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <p>Partitions: 100K, 500K, 200K, 300K, 600K &nbsp;|&nbsp; Processes: 212K, 417K, 112K, 426K</p>
 
     <div class="worked">
-      <div class="worked-title">🔍 First Fit Walkthrough</div>
+      <div class="worked-title"> First Fit Walkthrough</div>
       <div class="step-row">
         <span class="step-label">P1 = 212K</span>
         <span class="step-detail">Holes in order: 100K (too small), <code>500K ✓</code> (first fit!). Allocate → 500K hole splits to 288K leftover. Partitions now: 100, 288, 200, 300, 600</span>
@@ -553,7 +553,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </div>
 
     <div class="worked">
-      <div class="worked-title">🔍 Best Fit Walkthrough</div>
+      <div class="worked-title"> Best Fit Walkthrough</div>
       <div class="step-row">
         <span class="step-label">P1 = 212K</span>
         <span class="step-detail">Holes: 100(no), 500(diff=288), 200(diff=−12 no), 300(diff=88), 600(diff=388). Best: <code>300K</code> (diff=88 smallest). → 300K splits to 88K.</span>
@@ -573,7 +573,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </div>
 
     <div class="highlight-box yellow">
-      <div class="highlight-label">🎯 Key Conclusion</div>
+      <div class="highlight-label"> Key Conclusion</div>
       <p>In this example, Best Fit fits all 4 processes while First Fit fails on P4. Best Fit wins by preserving the large 600K hole for the big process. This is why Best Fit can outperform First Fit for specific workloads.</p>
     </div>
   </section>
@@ -581,7 +581,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── FRAGMENTATION ─── -->
   <section id="fragmentation" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-red">💥</div>
+      <div class="icon icon-red"></div>
       Fragmentation
     </div>
     <div class="section-sub">The memory manager's nightmare</div>
@@ -600,7 +600,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <h3>Compaction — The Solution to External Fragmentation</h3>
 
     <div class="analogy-card">
-      <div class="analogy-label">☕ Analogy</div>
+      <div class="analogy-label"> Analogy</div>
       <p>It's like defragmenting a hard drive, or reorganizing your wardrobe by shoving all clothes to one side so there's one big empty space instead of several small gaps. You physically move things to make room.</p>
     </div>
 
@@ -613,7 +613,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </ul>
 
     <div class="highlight-box teal">
-      <div class="highlight-label">📐 The 50% Rule (Knuth)</div>
+      <div class="highlight-label"> The 50% Rule (Knuth)</div>
       <p>Statistical analysis shows that with First Fit allocation, roughly <strong>½ of N allocated blocks</strong> are lost to fragmentation — i.e., for every 3 usable partitions, 1 is wasted to fragmentation. This is why the OS needs better schemes like paging.</p>
     </div>
   </section>
@@ -621,13 +621,13 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── PAGING ─── -->
   <section id="paging" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-teal">📄</div>
+      <div class="icon icon-teal"></div>
       Paging
     </div>
     <div class="section-sub">The revolutionary fix for external fragmentation</div>
 
     <div class="analogy-card">
-      <div class="analogy-label">☕ Analogy</div>
+      <div class="analogy-label"> Analogy</div>
       <p>Imagine a book (process) that needs space on shelves (RAM). Instead of needing one long contiguous shelf space, you tear the book into equal-sized chapters (pages) and put each chapter on any available shelf slot (frame). A table of contents (page table) tells you which slot holds which chapter. You can read the book in order even though the chapters are scattered — because you consult the TOC each time.</p>
     </div>
 
@@ -678,7 +678,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </ul>
 
     <div class="worked">
-      <div class="worked-title">📐 Lab Exercise: Page size = 32 bytes, 8 pages, 256 bytes total</div>
+      <div class="worked-title"> Lab Exercise: Page size = 32 bytes, 8 pages, 256 bytes total</div>
       <div class="step-row">
         <span class="step-label">Setup</span>
         <span class="step-detail">Total memory = 256 bytes = 2<sup>8</sup> → 8-bit address. Page size = 32 = 2<sup>5</sup> → 5-bit offset. Page number = 8−5 = <code>3 bits</code>. So address format: [p p p | d d d d d]</span>
@@ -705,7 +705,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </ul>
 
     <div class="highlight-box teal">
-      <div class="highlight-label">💡 TLB Miss Handling</div>
+      <div class="highlight-label"> TLB Miss Handling</div>
       <p>On a TLB miss, the hardware (or OS) walks the page table in RAM to find the mapping, loads it into the TLB, then retransmits the memory access. This is called a "page table walk." Modern CPUs have hardware page table walkers (PTWs) that do this automatically.</p>
     </div>
 
@@ -731,7 +731,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </ul>
 
     <div class="highlight-box purple">
-      <div class="highlight-label">🔬 Advanced: Multilevel Paging</div>
+      <div class="highlight-label"> Advanced: Multilevel Paging</div>
       <p>In x86-64, there are 4 levels of page tables (PML4 → PDPT → PD → PT). Each level maps a portion of the virtual address. This way, most of the page table can be swapped out — only the parts corresponding to active address ranges need to be in memory.</p>
     </div>
   </section>
@@ -739,13 +739,13 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── SEGMENTATION ─── -->
   <section id="segmentation" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-purple">🗂️</div>
+      <div class="icon icon-purple"></div>
       Segmentation
     </div>
     <div class="section-sub">memory that matches how programmers think</div>
 
     <div class="analogy-card">
-      <div class="analogy-label">☕ Analogy</div>
+      <div class="analogy-label"> Analogy</div>
       <p>Paging splits memory blindly by equal chunk size. Segmentation is smarter — it splits memory by <em>meaning</em>. Your program has a code section, a stack, a heap, a data section. Segmentation gives each one its own logical chunk in memory. It's like organizing your house by rooms (kitchen, bedroom, office) rather than arbitrary 10m² grids.</p>
     </div>
 
@@ -795,7 +795,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <p>Sizes: Seg 0: 1000, Seg 1: 400, Seg 2: 400, Seg 3: 1100, Seg 4: 1000 (approximate from diagram)</p>
 
     <div class="worked">
-      <div class="worked-title">📐 Converting Logical to Physical Addresses</div>
+      <div class="worked-title"> Converting Logical to Physical Addresses</div>
       <div class="step-row">
         <span class="step-label">53 byte of Seg 2</span>
         <span class="step-detail">Seg 2 base = 4300. Offset = 53. Check: 53 < limit(400) ✓. Physical = <code>4300 + 53 = 4353</code></span>
@@ -852,7 +852,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     </div>
 
     <div class="highlight-box green">
-      <div class="highlight-label">💡 Real World: Segmentation + Paging Combined</div>
+      <div class="highlight-label"> Real World: Segmentation + Paging Combined</div>
       <p>x86 processors actually have both! Each segment maps to a range of linear addresses, which are then translated by paging. In practice, modern OSes (Linux, Windows) use "flat segmentation" (all segments overlap, covering the full address space) and rely only on paging for the real work. Segmentation is effectively vestigial on x86-64 in user mode.</p>
     </div>
   </section>
@@ -860,7 +860,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── NUMERICAL PROBLEMS ─── -->
   <section id="numerical" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-yellow">🔢</div>
+      <div class="icon icon-yellow"></div>
       Numerical Problems
     </div>
     <div class="section-sub">fully worked, step-by-step</div>
@@ -908,7 +908,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <p><strong>Given:</strong> Page size = 512 bytes, Logical address = 1502</p>
 
     <div class="worked">
-      <div class="worked-title">📐 Translation</div>
+      <div class="worked-title"> Translation</div>
       <div class="step-row">
         <span class="step-label">Step 1</span>
         <span class="step-detail">Page number = floor(1502 / 512) = floor(2.933) = <code>2</code></span>
@@ -927,7 +927,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
     <p><strong>Segment Table:</strong> Seg0: base=1400, limit=1000 | Seg1: base=2400, limit=400 | Seg2: base=4300, limit=400</p>
 
     <div class="worked">
-      <div class="worked-title">📐 For logical address ⟨2, 53⟩</div>
+      <div class="worked-title"> For logical address ⟨2, 53⟩</div>
       <div class="step-row">
         <span class="step-label">Step 1</span>
         <span class="step-detail">Segment = 2, Offset = 53</span>
@@ -946,7 +946,7 @@ code.inline { font-family: var(--mono); font-size: 12.5px; background: rgba(26,1
   <!-- ─── CODE ─── -->
   <section id="code" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-green">💻</div>
+      <div class="icon icon-green"></div>
       Code Implementation
     </div>
     <div class="section-sub">C programs, fully commented</div>
@@ -1481,49 +1481,49 @@ Proc procs[MAX_P];
   </section>
   <section class="topic-section">
     <div class="section-title">
-      <div class="icon icon-red">⚠️</div>
+      <div class="icon icon-red"></div>
       Common Mistakes
     </div>
     <div class="section-sub">what students get wrong in exams</div>
 
     <div class="mistake-list">
       <div class="mistake">
-        <div class="mistake-icon">😬</div>
+        <div class="mistake-icon"></div>
         <div class="mistake-text">
           <strong>Confusing Internal vs External Fragmentation</strong>
           Internal = wasted space INSIDE an allocated partition. External = total free space is enough but it's scattered. Fixed-size → internal. Variable-size → external.
         </div>
       </div>
       <div class="mistake">
-        <div class="mistake-icon">😬</div>
+        <div class="mistake-icon"></div>
         <div class="mistake-text">
           <strong>Stopping Best/Worst Fit early</strong>
           Best Fit and Worst Fit MUST scan the entire hole list. You cannot stop early. Only First Fit stops at the first match.
         </div>
       </div>
       <div class="mistake">
-        <div class="mistake-icon">😬</div>
+        <div class="mistake-icon"></div>
         <div class="mistake-text">
           <strong>Mixing up page number and frame number</strong>
           Page number comes from the logical address. Frame number comes from the page table lookup. They're different things. Physical address uses the frame number.
         </div>
       </div>
       <div class="mistake">
-        <div class="mistake-icon">😬</div>
+        <div class="mistake-icon"></div>
         <div class="mistake-text">
           <strong>Forgetting the bounds check in segmentation</strong>
           Always check offset &lt; limit BEFORE computing physical address. If it fails, it's a trap/fault — don't compute a physical address at all.
         </div>
       </div>
       <div class="mistake">
-        <div class="mistake-icon">😬</div>
+        <div class="mistake-icon"></div>
         <div class="mistake-text">
           <strong>Thinking paging eliminates ALL fragmentation</strong>
           Paging eliminates EXTERNAL fragmentation. It still has INTERNAL fragmentation (the last page of a process may be partially empty).
         </div>
       </div>
       <div class="mistake">
-        <div class="mistake-icon">😬</div>
+        <div class="mistake-icon"></div>
         <div class="mistake-text">
           <strong>Page size must be power of 2</strong>
           Page sizes are always powers of 2 (512B, 4KB, 2MB, 1GB). This makes address splitting trivial using bit shifts. Exam questions sometimes test this.
@@ -1535,7 +1535,7 @@ Proc procs[MAX_P];
   <!-- ─── VIVA Q&A ─── -->
   <section id="viva" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-purple">🎙️</div>
+      <div class="icon icon-purple"></div>
       Viva & Exam Q&A
     </div>
     <div class="section-sub">click any question to reveal the answer</div>
@@ -1544,47 +1544,47 @@ Proc procs[MAX_P];
     <div class="viva-grid">
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>What is the difference between First Fit and Best Fit?</div>
+        <div class="viva-question"><span class="viva-icon"></span>What is the difference between First Fit and Best Fit?</div>
         <div class="viva-answer">First Fit allocates from the <strong>first hole big enough</strong> (scanning from the start, stops immediately). Best Fit scans the <strong>entire hole list</strong> and picks the <strong>smallest hole</strong> that's still big enough. First Fit is faster; Best Fit wastes less space per allocation but may create tiny unusable fragments.</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>What is external fragmentation? Give an example.</div>
+        <div class="viva-question"><span class="viva-icon"></span>What is external fragmentation? Give an example.</div>
         <div class="viva-answer">External fragmentation occurs when <strong>total free memory is enough for a process, but it's scattered in non-contiguous chunks</strong>. Example: You need 300KB. Holes available: 100KB, 120KB, 80KB (total = 300KB). But since the process needs a contiguous block, it can't be allocated — even though enough total free memory exists.</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>How does paging solve external fragmentation?</div>
+        <div class="viva-question"><span class="viva-icon"></span>How does paging solve external fragmentation?</div>
         <div class="viva-answer">Paging divides a process into fixed-size pages and places them in any available frames — <strong>they don't need to be contiguous</strong>. So even if free frames are scattered throughout RAM, any process can be loaded. The page table keeps track of where each page lives. External fragmentation: completely eliminated.</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>What is a TLB and why is it needed?</div>
+        <div class="viva-question"><span class="viva-icon"></span>What is a TLB and why is it needed?</div>
         <div class="viva-answer">TLB (Translation Lookaside Buffer) is a <strong>small, fast hardware cache</strong> for page table entries. Without it, every memory access requires two RAM accesses: one to read the page table, one for actual data. With TLB, if the mapping is cached (TLB hit, ~99% of time), translation costs nearly zero. It's essentially a cache for virtual-to-physical address mappings.</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>What are the two fields in a segmentation logical address?</div>
+        <div class="viva-question"><span class="viva-icon"></span>What are the two fields in a segmentation logical address?</div>
         <div class="viva-answer">A segmentation logical address has two components: <strong>⟨segment number s, offset d⟩</strong>. The segment number indexes into the segment table to get the base and limit. The offset is the byte position within that segment. Physical address = base[s] + d, provided d &lt; limit[s].</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>Why is compaction expensive?</div>
+        <div class="viva-question"><span class="viva-icon"></span>Why is compaction expensive?</div>
         <div class="viva-answer">Compaction requires <strong>physically moving process data in memory</strong> to consolidate free holes. This involves: copying potentially large amounts of data, updating all pointers and addresses (only possible with runtime relocation), and halting all processes during the operation. It has O(n) time and I/O cost. Modern systems avoid it by using paging instead.</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>🎯 Trick Question: Does paging have any fragmentation at all?</div>
+        <div class="viva-question"><span class="viva-icon"></span> Trick Question: Does paging have any fragmentation at all?</div>
         <div class="viva-answer">Yes! Paging eliminates <strong>external</strong> fragmentation but still has <strong>internal</strong> fragmentation. The last page of a process is rarely exactly full — the leftover space within that last page is wasted. On average, half a page per process is wasted (internal fragmentation = page_size/2 per process on average).</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>🎯 Trick Question: Which is better — First Fit or Best Fit?</div>
+        <div class="viva-question"><span class="viva-icon"></span> Trick Question: Which is better — First Fit or Best Fit?</div>
         <div class="viva-answer">Neither is universally better. Simulations show they perform similarly overall. <strong>First Fit is faster</strong> (no full scan needed). <strong>Best Fit wastes less per allocation</strong> but produces more tiny fragments that are useless. Best Fit can outperform First Fit for specific workloads (as shown in the lab exercise where Best Fit fits P4 but First Fit can't). In practice, First Fit is commonly preferred due to speed.</div>
       </div>
 
       <div class="viva-q" onclick="toggleQ(this)">
-        <div class="viva-question"><span class="viva-icon">▶</span>Long Answer: Compare paging and segmentation in detail.</div>
+        <div class="viva-question"><span class="viva-icon"></span>Long Answer: Compare paging and segmentation in detail.</div>
         <div class="viva-answer">
           <strong>Paging:</strong> Divides logical and physical memory into equal fixed-size units (pages/frames). Transparent to the programmer. Eliminates external fragmentation. Still has internal fragmentation (last page). Page table can be large. Hardware support via TLB makes it fast. Used in all modern OSes.<br><br>
           <strong>Segmentation:</strong> Divides memory according to the logical structure of the program (code, data, stack). Variable-size segments match programmer's view. No internal fragmentation. Has external fragmentation. Logical structure enables natural sharing and protection per segment. Segment table has base+limit per entry.<br><br>
@@ -1598,7 +1598,7 @@ Proc procs[MAX_P];
   <!-- ─── SUMMARY ─── -->
   <section id="summary" class="topic-section">
     <div class="section-title">
-      <div class="icon icon-green">⚡</div>
+      <div class="icon icon-green"></div>
       Quick Revision Summary
     </div>
     <div class="section-sub">everything you need for last-minute prep</div>
@@ -1647,7 +1647,7 @@ Proc procs[MAX_P];
     </div>
 
     <div class="highlight-box teal" style="margin-top: 32px;">
-      <div class="highlight-label">🗺️ Where This Fits in the OS Syllabus</div>
+      <div class="highlight-label"> Where This Fits in the OS Syllabus</div>
       <p>Memory Management I (Lab 9) sits right after Deadlock Management (Lab 8) and directly before Memory Management II / Page Replacement (Lab 10). The concepts here — especially paging — are the foundation for understanding page faults, demand paging, and page replacement algorithms (FIFO, LRU, Optimal) in the next lab. Make sure you're solid on page table lookups before moving forward!</p>
     </div>
   </section>

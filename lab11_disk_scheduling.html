@@ -287,7 +287,7 @@ canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid va
 
 <!-- HERO -->
 <div class="hero">
-  <div class="lab-badge">💿 Lab 11</div>
+  <div class="lab-badge"> Lab 11</div>
   <h1>Disk Scheduling<br><em>Algorithms</em></h1>
   <p class="hero-desc">Master FCFS, SSTF, SCAN, C-SCAN, LOOK, and C-LOOK — with interactive disk head visualisations, full THM calculations, step-by-step numericals, and commented C code.</p>
   <div class="tag-row">
@@ -303,7 +303,7 @@ canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid va
   <h2>Disk Anatomy & Why Scheduling Matters</h2>
 
   <div class="callout info">
-    <h4>🏢 The Office Building Analogy</h4>
+    <h4> The Office Building Analogy</h4>
     <p>Imagine a security guard (read/write head) in a skyscraper (disk platter). Requests come in from different floors (tracks). The guard can only serve one floor at a time and must physically travel between floors. A naive guard serves requests in arrival order — travelling 1→50→3→48→5. A smart guard plans the route to minimise total travel. That planning is disk scheduling.</p>
     <p style="margin-bottom:0">Every extra track the head travels costs ~5–15ms. With thousands of I/O requests per second, the scheduling algorithm has a massive impact on system performance.</p>
   </div>
@@ -644,7 +644,7 @@ canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid va
   <p>Enter any request queue, head position, and number of cylinders. Select an algorithm to see the animated seek path and THM.</p>
 
   <div class="sim-wrap">
-    <div class="sim-title"><span>💿</span> Disk Head Movement Visualiser</div>
+    <div class="sim-title"><span></span> Disk Head Movement Visualiser</div>
 
     <div class="atabs">
       <button class="atab sel-fcfs" id="tab-fcfs"  onclick="setAlgo('fcfs')">FCFS</button>
@@ -675,8 +675,8 @@ canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid va
           <option value="up">↑ Increasing</option>
         </select>
       </div>
-      <button class="btn btn-primary" onclick="runSim()">▶ Run</button>
-      <button class="btn btn-secondary" onclick="compareAll()">⚡ Compare All</button>
+      <button class="btn btn-primary" onclick="runSim()"> Run</button>
+      <button class="btn btn-secondary" onclick="compareAll()"> Compare All</button>
     </div>
 
     <div class="disk-canvas-wrap">
@@ -687,7 +687,7 @@ canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid va
   </div>
 
   <div class="sim-wrap" id="compareWrap" style="display:none">
-    <div class="sim-title"><span>⚡</span>All Algorithms Comparison</div>
+    <div class="sim-title"><span></span>All Algorithms Comparison</div>
     <div id="compareOut"></div>
   </div>
 </section>
@@ -1146,16 +1146,16 @@ canvas{display:block;border-radius:8px;background:var(--bg2);border:1px solid va
 
   <h3 style="margin-top:28px">Trick / Long Questions</h3>
 
-  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 TRICK: SSTF and SCAN give the same THM (236) in the lab example — does this mean they're equivalent? <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="tQ(this)"> TRICK: SSTF and SCAN give the same THM (236) in the lab example — does this mean they're equivalent? <span class="ch">▾</span></div>
   <div class="qa-a"><strong>No</strong> — equal THM for one example doesn't mean equivalent algorithms. Key differences: (1) SSTF can cause <strong>starvation</strong>; SCAN cannot. (2) SSTF's THM varies widely with different queues and can be much worse than SCAN if the queue changes. (3) SCAN has more predictable worst-case behaviour. (4) Their service orders are completely different — the same THM is a numerical coincidence for this specific input.</div></div>
 
-  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 When would FCFS actually be the best choice? <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="tQ(this)"> When would FCFS actually be the best choice? <span class="ch">▾</span></div>
   <div class="qa-a">FCFS is best (or at least acceptable) when: (1) The disk queue is very short — with 1–2 requests, all algorithms give the same result. (2) Requests naturally arrive in cylinder order already. (3) Fairness is paramount and response time doesn't matter. (4) In SSD/NVMe storage where there is no physical seek — all locations are accessed in equal time, making seek optimisation irrelevant. In practice, modern SSDs use FCFS or simple FIFO variants for this reason.</div></div>
 
-  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 Why does C-LOOK give a lower THM than C-SCAN (153 vs 183)? <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="tQ(this)"> Why does C-LOOK give a lower THM than C-SCAN (153 vs 183)? <span class="ch">▾</span></div>
   <div class="qa-a">C-SCAN always travels to the physical disk end (cylinder 199) and jumps from 0, even if the highest request is at 183 and the lowest is at 14. This wastes: (199−183)=16 cylinders going beyond the last request, and (14−0)=14 cylinders served from 0 instead of 14 — but wait, those 14 are counted. The key saving is (199−183)=16 cylinders of travel beyond the last request. C-LOOK doesn't go to 199 — it stops at 183 and jumps to 14 (the first request). So C-LOOK saves 16+14=30 cylinders? Actually 183−153=30. Exactly: C-LOOK saves travel to disk-end AND from cylinder-0 to first-request.</div></div>
 
-  <div class="qa"><div class="qa-q" onclick="tQ(this)">🎯 Does disk scheduling still matter for SSDs? <span class="ch">▾</span></div>
+  <div class="qa"><div class="qa-q" onclick="tQ(this)"> Does disk scheduling still matter for SSDs? <span class="ch">▾</span></div>
   <div class="qa-a"><strong>Largely no</strong> for seek time — SSDs have no moving parts, so access time is uniform regardless of "cylinder." However: (1) SSDs still benefit from I/O scheduling for <strong>write coalescing</strong> and managing write amplification. (2) <strong>NCQ (Native Command Queuing)</strong> and <strong>NVMe queues</strong> still reorder requests, but for different reasons (parallelism, wear levelling) not seek optimisation. (3) HDD disk scheduling remains fully relevant for spinning disks, which are still common in bulk storage and servers.</div></div>
 </section>
 
